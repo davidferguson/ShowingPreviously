@@ -14,7 +14,7 @@ EVENT_API_URL = 'https://www.dca.org.uk/api/event-instances/{id}'
 DAYS_AHEAD = 2
 
 CHAIN = Chain('Dundee Contemporary Arts')
-CINEMA = Cinema('Dundee Contemporary Arts', 'Europe/London', datetime.fromisoformat('2021-10-29'))
+CINEMA = Cinema('Dundee Contemporary Arts', 'Europe/London')
 SCREEN = Screen('Screen 1')
 
 SUBTITLE_PATTERN = re.compile(r'(?P<language>.+?) with (?P<subtitle>.+?) subtitles')
