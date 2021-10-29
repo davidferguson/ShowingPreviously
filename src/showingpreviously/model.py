@@ -5,22 +5,34 @@ class Chain:
     def __init__(self, name: str) -> None:
         self.name = name
 
+    def __repr__(self) -> str:
+        return f'Chain "{self.name}"'
+
 
 class Cinema:
     def __init__(self, name: str, timezone: str) -> None:
         self.name = name
         self.timezone = timezone
 
+    def __repr__(self) -> str:
+        return f'Cinema "{self.name}"'
+
 
 class Screen:
     def __init__(self, name: str) -> None:
         self.name = name
+
+    def __repr__(self) -> str:
+        return f'Screen "{self.name}"'
 
 
 class Film:
     def __init__(self, name: str, year: str) -> None:
         self.name = name
         self.year = year
+
+    def __repr__(self) -> str:
+        return f'Film "{self.name}" ({self.year})'
 
 
 class Showing:
@@ -32,6 +44,9 @@ class Showing:
         self.cinema = cinema
         self.screen = screen
         self.json_attributes = json_attributes
+
+    def __repr__(self) -> str:
+        return f'Showing of {self.film} at {self.chain}, {self.cinema}, {self.screen}, on {self.time.strftime("%Y-%m-%d %H:%M")}'
 
 
 class ChainArchiver:
