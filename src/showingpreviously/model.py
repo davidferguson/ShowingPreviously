@@ -19,7 +19,7 @@ class Screen:
 
 
 class Film:
-    def __init__(self, name: str, year: int) -> None:
+    def __init__(self, name: str, year: str) -> None:
         self.name = name
         self.year = year
 
