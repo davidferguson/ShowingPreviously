@@ -1,4 +1,5 @@
 import json
+import re
 
 from typing import Iterator, Tuple
 from bs4 import BeautifulSoup
@@ -15,6 +16,8 @@ DAYS_AHEAD = 2
 CHAIN = Chain('Dundee Contemporary Arts')
 CINEMA = Cinema('Dundee Contemporary Arts', 'Europe/London', datetime.fromisoformat('2021-10-29'))
 SCREEN = Screen('Screen 1')
+
+SUBTITLE_PATTERN = re.compile(r'(?P<language>.+?) with (?P<subtitle>.+?) subtitles')
 
 
 def get_response(url: str) -> requests.Response:
@@ -61,6 +64,11 @@ def get_film_info_from_url(film_url: str) -> (str, str, str, dict[str, any]):
     if language_dt is not None:
         language = language_dt.findNext('dd').text
         attributes['language'] = language
+        # if there is a subtitle for this film
+        match = SUBTITLE_PATTERN.match(language)
+        if match:
+            attributes['language'] = match.group('language')
+            attributes['subtitled'] = match.group('subtitle')
 
     return name, year, event_id, attributes
 
@@ -90,7 +98,7 @@ def get_event_showings(event_id: str) -> Iterator[Tuple[datetime, dict[str, any]
         json_attributes = {}
 
         if 'captioned' in instance and instance['captioned'] == 'Yes':
-            json_attributes['captioned'] = 'English'
+            json_attributes['captioned'] = 'english'
 
         yield timestamp, json_attributes
 
