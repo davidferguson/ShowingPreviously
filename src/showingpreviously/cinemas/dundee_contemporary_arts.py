@@ -75,11 +75,11 @@ def get_film_info_from_url(film_url: str) -> (str, str, str, dict[str, any]):
 
 def get_event_showings(event_id: str) -> Iterator[Tuple[datetime, dict[str, any]]]:
     api_url = EVENT_API_URL.format(id=event_id)
+    r = get_response(api_url)
     try:
-        r = get_response(api_url)
+        event_data = r.json()
     except json.JSONDecodeError:
         raise CinemaArchiverException(f'Error decoding JSON data from URL {api_url}')
-    event_data = r.json()
     if 'instances' not in event_data:
         raise CinemaArchiverException('JSON data does not have instances key')
     for instance in event_data['instances']:
