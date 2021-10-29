@@ -13,8 +13,8 @@ def add_chain(chain_name: str) -> None:
     conn.commit()
 
 
-def add_cinema(chain_name: str, cinema_name: str, cinema_timezone: str, started_archiving: datetime) -> None:
-    epoch_started_archiving = int(started_archiving.timestamp())
+def add_cinema(chain_name: str, cinema_name: str, cinema_timezone: str) -> None:
+    epoch_started_archiving = int(datetime.now().timestamp())
     with closing(conn.cursor()) as cur:
         cur.execute('INSERT OR IGNORE INTO cinemas (chainName, name, timezone, utc_started_archiving) values (?, ?, ?, ?)', (chain_name, cinema_name, cinema_timezone, epoch_started_archiving,))
     conn.commit()

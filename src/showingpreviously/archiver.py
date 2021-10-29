@@ -21,10 +21,9 @@ def process_showing(showing: Showing):
 
     timezone = pytz.timezone(cinema.timezone)
     utc_time = timezone.localize(time).astimezone(pytz.timezone('UTC'))
-    cinema_started_archiving = timezone.localize(cinema.started_archiving).astimezone(pytz.timezone('UTC'))
 
     add_chain(chain.name)
-    add_cinema(chain.name, cinema.name, cinema.timezone, cinema_started_archiving)
+    add_cinema(chain.name, cinema.name, cinema.timezone)
     add_screen(chain.name, cinema.name, screen.name)
     add_film(film.name, film.year)
     add_showing(film.name, film.year, chain.name, cinema.name, screen.name, utc_time, json_attributes)

@@ -7,10 +7,9 @@ class Chain:
 
 
 class Cinema:
-    def __init__(self, name: str, timezone: str, started_archiving: datetime) -> None:
+    def __init__(self, name: str, timezone: str) -> None:
         self.name = name
         self.timezone = timezone
-        self.started_archiving = started_archiving
 
 
 class Screen:
