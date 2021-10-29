@@ -11,3 +11,4 @@ Installing this module will install the `showingpreviously` command. This has tw
 2. `showingpreviously run`: Runs the archiver against all cinemas
 
 ## Supported Cinemas
+- [Dundee Contemporary Arts Cinema](https://www.dca.org.uk/whats-on/films) (added 2021-10-29)
