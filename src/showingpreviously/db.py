@@ -3,7 +3,8 @@ import os
 import json
 from contextlib import closing
 from datetime import datetime
-from appdirs import user_data_dir
+
+from showingpreviously.consts import data_dir, DATABASE_NAME
 
 
 def add_chain(chain_name: str) -> None:
@@ -60,8 +61,6 @@ def db_info() -> (int, int, int, int):
     return chains_count, cinema_count, screen_count, film_count
 
 
-database_dir = user_data_dir('showingpreviously')
-os.makedirs(database_dir, exist_ok=True)
-database_location = os.path.join(database_dir, 'showtimes.db')
+database_location = os.path.join(data_dir, DATABASE_NAME)
 conn = sqlite3.connect(database_location)
 create_table()
