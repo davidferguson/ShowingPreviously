@@ -17,7 +17,7 @@ CINEMA = Cinema('Dundee Contemporary Arts', 'Europe/London', datetime.fromisofor
 SCREEN = Screen('Screen 1')
 
 
-def get_response(url: str):
+def get_response(url: str) -> requests.Response:
     r = requests.get(url)
     if r.status_code != 200:
         raise CinemaArchiverException('Got status code %s when fetching URL %s' % (r.status_code, url))
@@ -82,7 +82,7 @@ def get_event_showings(event_id: str) -> Iterator[Tuple[datetime, dict[str, any]
         day = instance['ymd'][2]
         time = instance['time']
         timestamp_string = '%s-%s-%s %s' % (year, month, day, time)
-        format_string: str = '%Y-%m-%d %H:%M'
+        format_string = '%Y-%m-%d %H:%M'
         try:
             timestamp = datetime.strptime(timestamp_string, format_string)
         except ValueError:
