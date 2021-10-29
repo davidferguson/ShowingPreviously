@@ -4,10 +4,10 @@ from showingpreviously.db import add_chain, add_cinema, add_screen, add_film, ad
 from showingpreviously.model import Showing
 
 # import cinemas here, and add them to the all_cinema_chains list
-
+from showingpreviously.cinemas.dundee_contemporary_arts import DundeeContemporaryArts
 
 all_cinema_chains = [
-
+    DundeeContemporaryArts(),
 ]
 
 
