@@ -8,8 +8,8 @@ import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
 
 
-FILM_INDEX_URL = 'https://www.dca.org.uk/whats-on/films?from=%s&to=%s'
-EVENT_API_URL = 'https://www.dca.org.uk/api/event-instances/%s'
+FILM_INDEX_URL = 'https://www.dca.org.uk/whats-on/films?from={start}&to={end}'
+EVENT_API_URL = 'https://www.dca.org.uk/api/event-instances/{id}'
 DAYS_AHEAD = 2
 
 CHAIN = Chain('Dundee Contemporary Arts')
@@ -20,7 +20,7 @@ SCREEN = Screen('Screen 1')
 def get_response(url: str) -> requests.Response:
     r = requests.get(url)
     if r.status_code != 200:
-        raise CinemaArchiverException('Got status code %s when fetching URL %s' % (r.status_code, url))
+        raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {url}')
     return r
 
 
@@ -29,7 +29,7 @@ def get_film_index_url() -> str:
     end_date = start_date + timedelta(days=DAYS_AHEAD)
     start_str = start_date.strftime('%Y-%m-%d')
     end_str = end_date.strftime('%Y-%m-%d')
-    return FILM_INDEX_URL % (start_str, end_str)
+    return FILM_INDEX_URL.format(start=start_str, end=end_str)
 
 
 def get_film_links_from_index(index_url: str) -> Iterator[str]:
@@ -37,7 +37,7 @@ def get_film_links_from_index(index_url: str) -> Iterator[str]:
     soup = BeautifulSoup(r.text, features='html.parser')
     main_content = soup.find('div', {'id': 'content-main'})
     if not main_content:
-        raise CinemaArchiverException('Could not get main content of URL %s' % index_url)
+        raise CinemaArchiverException(f'Could not get main content of URL {index_url}')
     for film_title in main_content.find_all('h2'):
         link = film_title.find('a', href=True)
         yield link['href']
@@ -66,11 +66,11 @@ def get_film_info_from_url(film_url: str) -> (str, str, str, dict[str, any]):
 
 
 def get_event_showings(event_id: str) -> Iterator[Tuple[datetime, dict[str, any]]]:
-    api_url = EVENT_API_URL % event_id
+    api_url = EVENT_API_URL.format(id=event_id)
     try:
         r = get_response(api_url)
     except json.JSONDecodeError:
-        raise CinemaArchiverException('Error decoding JSON data from URL %s' % api_url)
+        raise CinemaArchiverException(f'Error decoding JSON data from URL {api_url}')
     event_data = r.json()
     if 'instances' not in event_data:
         raise CinemaArchiverException('JSON data does not have instances key')
@@ -81,12 +81,12 @@ def get_event_showings(event_id: str) -> Iterator[Tuple[datetime, dict[str, any]
         month = instance['ymd'][1]
         day = instance['ymd'][2]
         time = instance['time']
-        timestamp_string = '%s-%s-%s %s' % (year, month, day, time)
+        timestamp_string = f'{year}-{month}-{day} {time}'
         format_string = '%Y-%m-%d %H:%M'
         try:
             timestamp = datetime.strptime(timestamp_string, format_string)
         except ValueError:
-            raise CinemaArchiverException('Error parsing timestamp "%s" with format "%s"' % (timestamp_string, format_string))
+            raise CinemaArchiverException(f'Error parsing timestamp "{timestamp_string}" with format "{format_string}"')
         json_attributes = {}
 
         if 'captioned' in instance and instance['captioned'] == 'Yes':
