@@ -44,7 +44,7 @@ def get_days_to_fetch() -> [datetime.datetime]:
     return date_list
 
 
-def get_showings_for_date(cinema: dict[str, any], fetch_date: datetime.datetime) -> [Showing]:
+def get_showings_for_date(cinema: dict[str, any], fetch_date: datetime.date) -> [Showing]:
     showings = []
     fetch_date_str = fetch_date.strftime('%Y-%m-%d')
     whats_on_url = f'{cinema["base_url"]}/whats-on/{fetch_date_str}'
@@ -86,10 +86,10 @@ def get_showing_type_attributes(film_name: str, showing_date_str: str, showing: 
     for showing_type in showing_type_list:
         showing_type_attribute = [attr for attr in showing_type['class'] if attr != 'showing-type']
         if len(showing_type_attribute) != 1:
-            raise CinemaArchiverException('Expected one showing type attribute for {film_name} on {showing_date_str}: {str(showing_type_attribute)}')
+            raise CinemaArchiverException(f'Expected one showing type attribute for {film_name} on {showing_date_str}: {str(showing_type_attribute)}')
         showing_type_attribute = showing_type_attribute[0]
         if showing_type_attribute not in KNOWN_SHOWING_TYPE_ATTRIBUTES:
-            raise CinemaArchiverException('Unknown showing type attribute for {film_name} on {showing_date_str}: {showing_type_attribute}')
+            raise CinemaArchiverException(f'Unknown showing type attribute for {film_name} on {showing_date_str}: {showing_type_attribute}')
         attributes[showing_type_attribute] = True
     return attributes
 
