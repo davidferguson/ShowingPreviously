@@ -54,10 +54,12 @@ def get_attributes_as_dict(attributes_data: [dict[str, any]]) -> dict[str, Tuple
     for attribute in attributes_data:
         id = attribute['id']
         name: str = attribute['name']['text'].strip()
-        if name.lower().endswith(' (audio)'):
+        if name.lower() == 'audio described':
+            attributes[id] = 'audio-described', True
+        elif name.lower().endswith(' (audio)'):
             attributes[id] = 'language', name[:-8]
         elif name.lower() == 'open captioned':
-            attributes[id] = 'captioned', True
+            attributes[id] = 'captioned', 'english'
         elif name.lower().startswith('imax'):
             attributes[id] = 'format', 'IMAX'
         elif name.lower().startswith('isense'):
