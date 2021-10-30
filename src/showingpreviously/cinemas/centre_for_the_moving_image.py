@@ -112,13 +112,13 @@ def get_film_page_details(cinema: dict[str, any], film_url: str) -> (str, dict[s
         raise CinemaArchiverException(f'Got status code {req.status_code} when fetching URL {film_url}')
     soup = BeautifulSoup(req.text, features='html.parser')
     page_title = soup.find('title').text
-    if req.status_code == 403 or 'Access Denied' in page_title:
-        return '', {}
+    release_year = ''
     attributes = {}
-    details_list = soup.find('div', class_='event-detail')
-    release_year = get_specific_film_attribute(details_list, 'release_year')
-    attributes['language'] = get_specific_film_attribute(details_list, 'languages')
-    attributes['format'] = get_specific_film_attribute(details_list, 'format')
+    if req.status_code != 403 and 'Access Denied' not in page_title:
+        details_list = soup.find('div', class_='event-detail')
+        release_year = get_specific_film_attribute(details_list, 'release_year')
+        attributes['language'] = get_specific_film_attribute(details_list, 'languages')
+        attributes['format'] = get_specific_film_attribute(details_list, 'format')
     film_page_details_cache[film_url] = (release_year, attributes)
     return release_year, attributes
 
