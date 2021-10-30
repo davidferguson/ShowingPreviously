@@ -3,7 +3,7 @@ from datetime import datetime
 
 class Chain:
     def __init__(self, name: str) -> None:
-        self.name = name
+        self.name = name.strip()
 
     def __repr__(self) -> str:
         return f'Chain "{self.name}"'
@@ -11,7 +11,7 @@ class Chain:
 
 class Cinema:
     def __init__(self, name: str, timezone: str) -> None:
-        self.name = name
+        self.name = name.strip()
         self.timezone = timezone
 
     def __repr__(self) -> str:
@@ -20,7 +20,7 @@ class Cinema:
 
 class Screen:
     def __init__(self, name: str) -> None:
-        self.name = name
+        self.name = name.strip()
 
     def __repr__(self) -> str:
         return f'Screen "{self.name}"'
@@ -28,8 +28,8 @@ class Screen:
 
 class Film:
     def __init__(self, name: str, year: str) -> None:
-        self.name = name
-        self.year = year
+        self.name = name.strip()
+        self.year = str(year).strip()
 
     def __repr__(self) -> str:
         return f'Film "{self.name}" ({self.year})'
