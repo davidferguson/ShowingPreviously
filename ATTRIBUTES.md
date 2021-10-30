@@ -5,9 +5,13 @@ that add some extra information about that showing. All JSON attributes are opti
 exposes that information, they are used.
 
 The following attributes are used:
-- `language`: string, specifies the language of the showing
-- `captioned`: string or bool, specifies if the film is captioned. If the language of the captioning is known, this is 
+- `audio-described`: string or bool, specifies if the film can be viewed with an audio description (usually through an
+additional device provided by the cinema). If the language of the audio description is known, this is the string 
+language (eg. `english`), and if not, this is simply `True`
+- `captioned`: string or bool, specifies if the film is captioned. If the language of the captioning is known, this is
 the string language (eg. `english`), and if not, this is simply `True`
-- `subtitled`: string or bool, specifies if the film is subtitled. If the language of the subtitling is known, this is 
-the string language (eg. `english`), and if not, this is simply `True`
+- `format`: specifies the format the film was projected in
+- `language`: string, specifies the language(s) of the showing
 - `senior`: specifies if this showing is for senior citizens only
+- `subtitled`: string or bool, specifies if the film is subtitled. If the language of the subtitling is known, this is
+the string language (eg. `english`), and if not, this is simply `True`
