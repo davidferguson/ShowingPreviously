@@ -11,7 +11,7 @@ DAYS_PREVIOUS = 3
 
 CHAIN = Chain(name='Centre for the Moving Image')
 EDINBURGH_CINEMA = Cinema(name='Filmhouse Edinburgh', timezone='Europe/London')
-BELMONT_CINEMA = Cinema(name='Filmhouse Belmont', timezone='Europe/London')
+BELMONT_CINEMA = Cinema(name='Belmont Filmhouse', timezone='Europe/London')
 
 
 KNOWN_SHOWING_TYPE_ATTRIBUTES = [
