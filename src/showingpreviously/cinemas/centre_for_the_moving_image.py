@@ -16,7 +16,8 @@ BELMONT_CINEMA = Cinema(name='Belmont Filmhouse', timezone='Europe/London')
 KNOWN_SHOWING_TYPE_ATTRIBUTES = [
     'audio-described',
     'subtitled',
-    'captioned'
+    'captioned',
+    'carers-and-babies',
 ]
 
 
@@ -67,6 +68,10 @@ def get_showing_item(cinema: dict[str, any], showing_date_str: str, showing_item
         showing_datetime = datetime.datetime.strptime(f'{showing_date_str} {showing_time_str}', '%Y-%m-%d %H:%M')
         showing_screen = Screen(name=showing_time.find('span', class_='screen').text)
         showing_type_attributes = get_showing_type_attributes(name, showing_date_str, showing_time)
+        if ' (Baby + Carer)' in film.name:
+            film.name = film.name[:-len(' (Baby + Carer)')]
+            if 'carers-and-babies' not in showing_type_attributes:
+                showing_type_attributes['carers-and-babies'] = True
         showing = Showing(
             film=film,
             time=showing_datetime,
