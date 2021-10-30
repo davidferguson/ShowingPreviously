@@ -3,7 +3,6 @@ import showingpreviously.requests as requests
 
 import datetime
 from bs4 import BeautifulSoup
-from typing import Iterator, Tuple
 
 
 DAYS_PREVIOUS = 3
@@ -64,17 +63,17 @@ def get_showing_item(cinema: dict[str, any], showing_date_str: str, showing_item
     showing_times = showing_item.find('div', class_='screening-times-btns')
     film = Film(name=name, year=release_year)
     for showing_time in showing_times.find_all('a', class_='btn-times'):
-        showing_time_str = showing_time.text.strip().split('\n')[0].strip()
+        showing_time_str = showing_time.text.strip().split('\n')[0]
         showing_datetime = datetime.datetime.strptime(f'{showing_date_str} {showing_time_str}', '%Y-%m-%d %H:%M')
-        showing_screen = Screen(name=showing_time.find('span', class_='screen').text.strip())
+        showing_screen = Screen(name=showing_time.find('span', class_='screen').text)
         showing_type_attributes = get_showing_type_attributes(name, showing_date_str, showing_time)
         showing = Showing(
-            film = film,
-            time = showing_datetime,
-            chain = CHAIN,
-            cinema = cinema['cinema'],
-            screen = showing_screen,
-            json_attributes = {**attributes, **showing_type_attributes}
+            film=film,
+            time=showing_datetime,
+            chain=CHAIN,
+            cinema=cinema['cinema'],
+            screen=showing_screen,
+            json_attributes={**attributes, **showing_type_attributes}
         )
         showing_list.append(showing)
     return showing_list
@@ -105,20 +104,20 @@ def get_film_page_details(cinema: dict[str, any], film_url: str) -> (str, dict[s
     soup = BeautifulSoup(req.text, features='html.parser')
     page_title = soup.find('title').text
     if 'Access Denied' in page_title:
-        return ('', {})
+        return '', {}
     attributes = {}
     details_list = soup.find('div', class_='event-detail')
     release_year = get_specific_film_attribute(details_list, 'release_year')
     attributes['language'] = get_specific_film_attribute(details_list, 'languages')
     attributes['format'] = get_specific_film_attribute(details_list, 'format')
     film_page_details_cache[film_url] = (release_year, attributes)
-    return (release_year, attributes)
+    return release_year, attributes
 
 
 def get_specific_film_attribute(details_list: BeautifulSoup, attribute_name: str) -> str:
     attribute_soup = details_list.find('li', class_=attribute_name)
-    if attribute_soup == None:
-        return ""
+    if attribute_soup is None:
+        return ''
     attribute_value = attribute_soup.find('p').text.strip().lower()
     return attribute_value
 
