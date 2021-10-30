@@ -9,7 +9,7 @@ from showingpreviously.cinemas.dundee_contemporary_arts import DundeeContemporar
 
 all_cinema_chains = [
     CentreForTheMovingImage(),
-#    DundeeContemporaryArts(),
+    DundeeContemporaryArts(),
 ]
 
 
