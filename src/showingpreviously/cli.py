@@ -1,6 +1,8 @@
+from typing import Optional
+
 import click
 
-from showingpreviously.archiver import run_all, all_cinema_chains
+from showingpreviously.archiver import run_all, run_single, all_cinema_chains
 from showingpreviously.db import db_info, database_location
 
 
@@ -19,9 +21,13 @@ def info_cmd() -> None:
 
 
 @cli.command('run')
-def run_cmd() -> None:
+@click.option('--chain', default=None, show_default=True, type=click.STRING, help='The archiver class name to run')
+def run_cmd(chain: Optional[str]) -> None:
     """Runs the archiver on all cinema chains"""
-    run_all()
+    if chain is None:
+        run_all()
+    else:
+        run_single(chain)
 
 
 if __name__ == '__main__':

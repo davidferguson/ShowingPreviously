@@ -1,7 +1,7 @@
 import pytz
 
 from showingpreviously.db import add_chain, add_cinema, add_screen, add_film, add_showing
-from showingpreviously.model import Showing
+from showingpreviously.model import Showing, Chain
 
 # import cinemas here, and add them to the all_cinema_chains list
 from showingpreviously.cinemas.dundee_contemporary_arts import DundeeContemporaryArts
@@ -29,8 +29,18 @@ def process_showing(showing: Showing):
     add_showing(film.name, film.year, chain.name, cinema.name, screen.name, utc_time, json_attributes)
 
 
+def run_chain(chain: Chain):
+    showings = chain.get_showings()
+    for showing in showings:
+        process_showing(showing)
+
+
 def run_all() -> None:
     for cinema_chain in all_cinema_chains:
-        showings = cinema_chain.get_showings()
-        for showing in showings:
-            process_showing(showing)
+        run_chain(cinema_chain)
+
+
+def run_single(name: str) -> None:
+    for cinema_chain in all_cinema_chains:
+        if type(cinema_chain).__name__ == name:
+            run_chain(cinema_chain)
