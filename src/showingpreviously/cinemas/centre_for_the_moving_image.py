@@ -63,15 +63,17 @@ def get_showing_item(cinema: dict[str, any], showing_date_str: str, showing_item
     release_year, attributes = get_film_page_details(cinema, more_info_link)
     showing_times = showing_item.find('div', class_='screening-times-btns')
     film = Film(name=name, year=release_year)
+    if film.name.lower().endswith(' (baby + carer)'):
+        film.name = film.name[:-len(' (baby + carer)')]
+        attributes['carers-and-babies'] = True
+    if film.name.lower().startswith('senior selections: '):
+        film.name = film.name[len('senior selections: '):]
+        attributes['seniors'] = True
     for showing_time in showing_times.find_all('a', class_='btn-times'):
         showing_time_str = showing_time.text.strip().split('\n')[0]
         showing_datetime = datetime.datetime.strptime(f'{showing_date_str} {showing_time_str}', '%Y-%m-%d %H:%M')
         showing_screen = Screen(name=showing_time.find('span', class_='screen').text)
         showing_type_attributes = get_showing_type_attributes(name, showing_date_str, showing_time)
-        if ' (Baby + Carer)' in film.name:
-            film.name = film.name[:-len(' (Baby + Carer)')]
-            if 'carers-and-babies' not in showing_type_attributes:
-                showing_type_attributes['carers-and-babies'] = True
         showing = Showing(
             film=film,
             time=showing_datetime,
