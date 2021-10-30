@@ -58,7 +58,8 @@ def db_info() -> (int, int, int, int):
         cinema_count = cur.execute('SELECT COUNT(*) FROM cinemas').fetchone()[0]
         screen_count = cur.execute('SELECT COUNT(*) FROM screens').fetchone()[0]
         film_count = cur.execute('SELECT COUNT(*) FROM films').fetchone()[0]
-    return chains_count, cinema_count, screen_count, film_count
+        showing_count = cur.execute('SELECT COUNT(*) FROM showings').fetchone()[0]
+    return chains_count, cinema_count, screen_count, film_count, showing_count
 
 
 database_location = os.path.join(data_dir, DATABASE_NAME)

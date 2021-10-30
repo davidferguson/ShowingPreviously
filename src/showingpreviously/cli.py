@@ -17,7 +17,7 @@ def info_cmd() -> None:
     print('ShowingPreviously: A cinema showtimes archiver')
     print('The database is stored at "%s".' % database_location)
     print('There are %s cinema chains installed' % len(all_cinema_chains))
-    print('In the database we have %s chains, with %s cinemas and %s screens, and %s films.' % db_info())
+    print('In the database we have %s chains, with %s cinemas and %s screens, %s films and %s showings.' % db_info())
 
 
 @cli.command('run')
