@@ -11,11 +11,11 @@ from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chai
 
 FILM_INDEX_URL = 'https://www.dca.org.uk/whats-on/films?from={start}&to={end}'
 EVENT_API_URL = 'https://www.dca.org.uk/api/event-instances/{id}'
+SCREEN_URL = 'https://tickets.dca.org.uk/dundeeca/website/ChooseSeats.aspx?EventInstanceId={showing_id}'
 DAYS_AHEAD = 2
 
 CHAIN = Chain('Dundee Contemporary Arts')
 CINEMA = Cinema('Dundee Contemporary Arts', 'Europe/London')
-SCREEN = Screen('Screen 1')
 
 SUBTITLE_PATTERN = re.compile(r'(?P<language>.+?) with (?P<subtitle>.+?) subtitles')
 
@@ -73,6 +73,14 @@ def get_film_info_from_url(film_url: str) -> (str, str, str, dict[str, any]):
     return name, year, event_id, attributes
 
 
+def get_screen(showing_id: int) -> Screen:
+    url = SCREEN_URL.format(showing_id=showing_id)
+    r = get_response(url)
+    soup = BeautifulSoup(r.text, features='html.parser')
+    screen_name = soup.find('span', {'class': 'AreaName'}).text
+    return Screen(screen_name)
+
+
 def get_event_showings(event_id: str) -> Iterator[Tuple[datetime, dict[str, any]]]:
     api_url = EVENT_API_URL.format(id=event_id)
     r = get_response(api_url)
@@ -95,12 +103,15 @@ def get_event_showings(event_id: str) -> Iterator[Tuple[datetime, dict[str, any]
             timestamp = datetime.strptime(timestamp_string, format_string)
         except ValueError:
             raise CinemaArchiverException(f'Error parsing timestamp "{timestamp_string}" with format "{format_string}"')
+
+        screen = get_screen(instance['id'])
+
         json_attributes = {}
 
         if 'captioned' in instance and instance['captioned'] == 'Yes':
             json_attributes['captioned'] = 'english'
 
-        yield timestamp, json_attributes
+        yield timestamp, screen, json_attributes
 
 
 class DundeeContemporaryArts(ChainArchiver):
@@ -110,8 +121,8 @@ class DundeeContemporaryArts(ChainArchiver):
         for film_link in get_film_links_from_index(index_url):
             name, year, event_id, film_attributes = get_film_info_from_url(film_link)
             film = Film(name, year)
-            for timestamp, showing_attributes in get_event_showings(event_id):
+            for timestamp, screen, showing_attributes in get_event_showings(event_id):
                 json_attributes = {**film_attributes, **showing_attributes}
-                showing = Showing(film, timestamp, CHAIN, CINEMA, SCREEN, json_attributes)
+                showing = Showing(film, timestamp, CHAIN, CINEMA, screen, json_attributes)
                 showings.append(showing)
         return showings
