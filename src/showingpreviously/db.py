@@ -16,7 +16,7 @@ def add_chain(chain_name: str) -> None:
 def add_cinema(chain_name: str, cinema_name: str, cinema_timezone: str) -> None:
     epoch_started_archiving = int(datetime.now().timestamp())
     with closing(conn.cursor()) as cur:
-        cur.execute('INSERT OR IGNORE INTO cinemas (chainName, name, timezone, utc_started_archiving) values (?, ?, ?, ?)', (chain_name, cinema_name, cinema_timezone, epoch_started_archiving,))
+        cur.execute('INSERT OR IGNORE INTO cinemas (chainName, name, timezone, utcStartedArchiving) values (?, ?, ?, ?)', (chain_name, cinema_name, cinema_timezone, epoch_started_archiving,))
     conn.commit()
 
 
@@ -37,7 +37,7 @@ def add_showing(film_name: str, film_year: str, chain_name: str, cinema_name: st
     json_attributes_string = json.dumps(json_attributes)
     with closing(conn.cursor()) as cur:
         cur.execute(
-            'INSERT OR REPLACE INTO showings (filmName, filmYear, chainName, cinemaName, screenName, utc_time, jsonAttributes) values (?, ?, ?, ?, ?, ?, ?)',
+            'INSERT OR REPLACE INTO showings (filmName, filmYear, chainName, cinemaName, screenName, utcTime, jsonAttributes) values (?, ?, ?, ?, ?, ?, ?)',
             (film_name, film_year, chain_name, cinema_name, screen_name, epoch_time, json_attributes_string,)
         )
     conn.commit()
@@ -46,10 +46,10 @@ def add_showing(film_name: str, film_year: str, chain_name: str, cinema_name: st
 def create_table() -> None:
     with closing(conn.cursor()) as cur:
         cur.execute('CREATE TABLE IF NOT EXISTS chains (name TEXT, PRIMARY KEY (name))')
-        cur.execute('CREATE TABLE IF NOT EXISTS cinemas (chainName TEXT, name TEXT, timezone TEXT, utc_started_archiving INT, PRIMARY KEY (chainName, name), FOREIGN KEY (chainName) REFERENCES chains(name))')
+        cur.execute('CREATE TABLE IF NOT EXISTS cinemas (chainName TEXT, name TEXT, timezone TEXT, utcStartedArchiving INT, PRIMARY KEY (chainName, name), FOREIGN KEY (chainName) REFERENCES chains(name))')
         cur.execute('CREATE TABLE IF NOT EXISTS screens (chainName TEXT, cinemaName TEXT, name TEXT, PRIMARY KEY (chainName, cinemaName, name), FOREIGN KEY (chainName) REFERENCES cinemas (chainName), FOREIGN KEY (cinemaName) REFERENCES cinemas (name))')
         cur.execute('CREATE TABLE IF NOT EXISTS films (name TEXT, year TEXT, PRIMARY KEY (name, year))')
-        cur.execute('CREATE TABLE IF NOT EXISTS showings (filmName TEXT, filmYear TEXT, chainName TEXT, cinemaName TEXT, screenName TEXT, utc_time INT, jsonAttributes TEXT, PRIMARY KEY (filmName, filmYear, chainName, cinemaName, screenName, utc_time), FOREIGN KEY (filmName) REFERENCES films (name), FOREIGN KEY (filmYear) REFERENCES films (year), FOREIGN KEY (chainName) REFERENCES screens (chainName), FOREIGN KEY (cinemaName) REFERENCES screens (cinemaName), FOREIGN KEY (screenName) REFERENCES screens (name))')
+        cur.execute('CREATE TABLE IF NOT EXISTS showings (filmName TEXT, filmYear TEXT, chainName TEXT, cinemaName TEXT, screenName TEXT, utcTime INT, jsonAttributes TEXT, PRIMARY KEY (filmName, filmYear, chainName, cinemaName, screenName, utcTime), FOREIGN KEY (filmName) REFERENCES films (name), FOREIGN KEY (filmYear) REFERENCES films (year), FOREIGN KEY (chainName) REFERENCES screens (chainName), FOREIGN KEY (cinemaName) REFERENCES screens (cinemaName), FOREIGN KEY (screenName) REFERENCES screens (name))')
 
 
 def db_info() -> (int, int, int, int):
