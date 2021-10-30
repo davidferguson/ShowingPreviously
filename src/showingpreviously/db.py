@@ -37,7 +37,7 @@ def add_showing(film_name: str, film_year: str, chain_name: str, cinema_name: st
     json_attributes_string = json.dumps(json_attributes)
     with closing(conn.cursor()) as cur:
         cur.execute(
-            'INSERT OR IGNORE INTO showings (filmName, filmYear, chainName, cinemaName, screenName, utc_time, jsonAttributes) values (?, ?, ?, ?, ?, ?, ?)',
+            'INSERT OR REPLACE INTO showings (filmName, filmYear, chainName, cinemaName, screenName, utc_time, jsonAttributes) values (?, ?, ?, ?, ?, ?, ?)',
             (film_name, film_year, chain_name, cinema_name, screen_name, epoch_time, json_attributes_string,)
         )
     conn.commit()
