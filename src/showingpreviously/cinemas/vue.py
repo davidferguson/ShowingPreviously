@@ -35,11 +35,11 @@ def get_cinemas_as_dict() -> dict[str, Cinema]:
     return cinemas
 
 
-def get_attributes(showing: dict[str, any]) -> dict[str, str]:
-    attributes = {}
+def get_attributes(showing: dict[str, any]) -> dict[str, any]:
+    attributes = {'format':[]}
     for tag in showing['tags']:
         if tag['is_imax']:
-            attributes['format'] = 'IMAX'
+            attributes['format'].append('IMAX')
 
         if tag['name'] == 'AD':
             attributes['audio-described'] = True
@@ -47,9 +47,15 @@ def get_attributes(showing: dict[str, any]) -> dict[str, str]:
             attributes['subtitled'] = True
         elif tag['name'] == 'Event':
             attributes['event'] = True
-        elif tag['name'] == 'Live':
-            attributes['format'] = 'live'
+        elif tag['name'] in ['Live', '4K', '70mm', 'Atmos', 'HFR 30', 'IMAX', 'IMAX3D']:
+            attributes['format'].append(tag['name'])
+        elif tag['name'] == 'Seniors':
+            attributes['senior'] = True
+        elif tag['name'] == 'Baby':
+            attributes['carers-and-babies'] = True
 
+    if len(attributes['format']) == 0:
+        del attributes['format']
     return attributes
 
 
