@@ -120,7 +120,9 @@ def get_film_page_details(cinema: dict[str, any], film_url: str) -> (str, dict[s
         details_list = soup.find('div', class_='event-detail')
         release_year = get_specific_film_attribute(details_list, 'release_year')
         attributes['language'] = get_specific_film_attribute(details_list, 'languages')
-        attributes['format'] = get_specific_film_attribute(details_list, 'format')
+        filmFormat =  get_specific_film_attribute(details_list, 'format')
+        if filmFormat != '':
+            attributes['format'] = [filmFormat]
     film_page_details_cache[film_url] = (release_year, attributes)
     return release_year, attributes
 
