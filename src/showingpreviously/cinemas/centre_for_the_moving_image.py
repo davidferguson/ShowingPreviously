@@ -29,7 +29,6 @@ CINEMAS_LIST = [
 
 film_page_details_cache = {}
 
-
 def get_response(url: str) -> requests.Response:
     r = requests.get(url)
     if r.status_code != 200:
@@ -70,9 +69,12 @@ def get_showing_item(cinema: dict[str, any], showing_date_str: str, showing_item
         film.name = film.name[len('senior selections: '):]
         attributes['seniors'] = True
     for showing_time in showing_times.find_all('a', class_='btn-times'):
-        showing_time_str = showing_time.text.strip().split('\n')[0]
+        showing_time_str = showing_time.text.strip().split('\n')[0].strip()
+        showing_screen = Screen(name=showing_time.find('span', class_='screen').text.strip())
+        if showing_time_str == 'Watch Now' or showing_screen.name == 'On Demand':
+            # Do not include On-Demand showings (through the Filmhouse at Home streaming service)
+            continue
         showing_datetime = datetime.datetime.strptime(f'{showing_date_str} {showing_time_str}', '%Y-%m-%d %H:%M')
-        showing_screen = Screen(name=showing_time.find('span', class_='screen').text)
         showing_type_attributes = get_showing_type_attributes(name, showing_date_str, showing_time)
         showing = Showing(
             film=film,
