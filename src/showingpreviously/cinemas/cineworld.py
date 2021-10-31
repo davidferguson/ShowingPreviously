@@ -39,19 +39,12 @@ def get_cinemas_as_dict() -> dict[str, Cinema]:
 def get_json_attributes(attributes: [str]) -> dict[str, any]:
     json_attributes = {}
     for attribute in attributes:
-        if attribute == 'autism-friendly':
-            json_attributes['autism-friendly'] = True
-        elif attribute == 'wheelchair-accessible':
-            json_attributes['wheelchair-accessible'] = True
-        elif attribute == 'audio-described':
+        if attribute == 'audio-described':
             json_attributes['audio-described'] = True
         elif attribute in ['120-fps', '35-mm', '70-mm', '4dx', '4k', 'imax', 'imax-3d', 'imax-3d-vip', 'imax-vr', 'screenx', 'thx', '3d']:
-            if 'format' in json_attributes:
-                if type(json_attributes['format']) != list:
-                    json_attributes['format'] = [json_attributes['format']]
-                json_attributes['format'].append(attribute)
-            else:
-                json_attributes['format'] = attribute
+            if 'format' not in json_attributes:
+                json_attributes['format'] = []
+            json_attributes['format'].append(attribute)
         elif attribute in ['bengali', 'chinese-st', 'filipino', 'gujarati', 'hindi', 'japanese', 'kannada', 'korean', 'malayalam', 'mandarin', 'marathi', 'nepali', 'punjabi', 'russian', 'spanish', 'tamil', 'telugu', 'urdu', 'vietnamese']:
             json_attributes['language'] = attribute
         elif attribute in ['sub-titled', 'subbed', 'korean-sub', 'spanish-sub']:
@@ -62,6 +55,7 @@ def get_json_attributes(attributes: [str]) -> dict[str, any]:
             else:
                 json_attributes['subtitled'] = True
         elif attribute in ['dubbed', 'eng-dubbed', 'spanish-dub']:
+            # these should already be handled by the language the film is in
             pass
 
     return json_attributes
