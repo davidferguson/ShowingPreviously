@@ -28,7 +28,7 @@ class Screen:
 
 class Film:
     def __init__(self, name: str, year: str) -> None:
-        self.name = name.strip()
+        self.name = name.strip().upper()
         self.year = str(year).strip()
 
     def __repr__(self) -> str:
