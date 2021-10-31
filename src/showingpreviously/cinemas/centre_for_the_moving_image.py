@@ -18,6 +18,7 @@ KNOWN_SHOWING_TYPE_ATTRIBUTES = [
     'subtitled',
     'captioned',
     'carers-and-babies',
+    'three-d',
 ]
 
 
@@ -76,6 +77,12 @@ def get_showing_item(cinema: dict[str, any], showing_date_str: str, showing_item
             continue
         showing_datetime = datetime.datetime.strptime(f'{showing_date_str} {showing_time_str}', '%Y-%m-%d %H:%M')
         showing_type_attributes = get_showing_type_attributes(name, showing_date_str, showing_time)
+        # Special case for 3D screenings, which should be treated as a format and not as a separate attribute
+        if 'three-d' in showing_type_attributes:
+            if 'format' not in attributes:
+                attributes['format'] = []
+            attributes['format'].append('3d')
+            del showing_type_attributes['three-d']
         showing = Showing(
             film=film,
             time=showing_datetime,
