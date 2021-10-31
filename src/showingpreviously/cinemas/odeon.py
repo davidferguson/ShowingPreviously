@@ -76,7 +76,12 @@ def get_showing_attributes(showing_attributes: [str], attributes: dict[str, Tupl
     for attribute_id in showing_attributes:
         if attribute_id in attributes:
             key, value = attributes[attribute_id]
-            json_attributes[key] = value
+            if key in ['format']:
+                if key not in json_attributes:
+                    json_attributes[key] = []
+                json_attributes[key].append(value)
+            else:
+                json_attributes[key] = value
     return json_attributes
 
 

@@ -11,7 +11,7 @@ language (eg. `english`), and if not, this is simply `True`
 - `carers-and-babies`: bool, specifies if this showing is for babies and their carers only
 - `captioned`: string or bool, specifies if the film is captioned. If the language of the captioning is known, this is
 the string language (eg. `english`), and if not, this is simply `True`
-- `format`: list of string, specifies the format the film was projected in
+- `format`: list of str, specifies the format(s) the film was projected in
 - `language`: string, specifies the language(s) of the showing
 - `senior`: bool, specifies if this showing is for senior citizens only
 - `subtitled`: string or bool, specifies if the film is subtitled. If the language of the subtitling is known, this is

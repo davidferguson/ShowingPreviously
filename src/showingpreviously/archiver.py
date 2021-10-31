@@ -8,12 +8,14 @@ from showingpreviously.cinemas.centre_for_the_moving_image import CentreForTheMo
 from showingpreviously.cinemas.cineworld import Cineworld
 from showingpreviously.cinemas.dundee_contemporary_arts import DundeeContemporaryArts
 from showingpreviously.cinemas.vue import Vue
+from showingpreviously.cinemas.odeon import Odeon
 
 all_cinema_chains = [
     CentreForTheMovingImage(),
     Cineworld(),
     DundeeContemporaryArts(),
     Vue(),
+    Odeon(),
 ]
 
 
