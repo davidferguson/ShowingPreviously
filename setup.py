@@ -22,5 +22,6 @@ setup(
         'pytz',
         'requests',
         'beautifulsoup4',
+        'selenium',
     ],
 )

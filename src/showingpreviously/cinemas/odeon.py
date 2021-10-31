@@ -1,5 +1,7 @@
 import json
+import re
 
+from selenium import webdriver
 from datetime import datetime, timedelta
 from typing import Tuple, Iterator
 import showingpreviously.requests as requests
@@ -9,14 +11,29 @@ CINEMAS_URL = 'https://vwc.odeon.co.uk/WSVistaWebClient/ocapi/v1/browsing/master
 FILMS_URL = 'https://vwc.odeon.co.uk/WSVistaWebClient/ocapi/v1/browsing/master-data/films'
 SHOWINGS_URL = 'https://vwc.odeon.co.uk/WSVistaWebClient/ocapi/v1/browsing/master-data/showtimes/business-date/{date}'
 
-JWT_TOKEN = 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjRBQUQ3MUYwRDI3OURBM0Y2NkMzNjJBM0JGMDRBMDFDNDBBNzU4RjciLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJxNGJycW1nazQxMWtjOHo5eGJiZzF0YTNueGh5eHJneDIiLCJnaXZlbl9uYW1lIjoiT2Rlb24iLCJmYW1pbHlfbmFtZSI6IldlYiBIb3N0IiwidmlzdGFfb3JnYW5pc2F0aW9uX2NvZGUiOiI4a3Q1ZnZ3MjYzYTR6NjJha2hkcWcyMXBxbTgiLCJyb2xlIjoiQ1hNX0FjY2Vzc1J1bGVzQXBpIiwidG9rZW5fdXNhZ2UiOiJhY2Nlc3NfdG9rZW4iLCJqdGkiOiIwODU1NTZlZi0wM2E4LTRhYWMtYTVkYy03YTNmYTlkNDRhYzMiLCJhdWQiOiJhbGwiLCJhenAiOiJPZGVvbiBXZWJzaXRlIC0gUHJvZHVjdGlvbiIsIm5iZiI6MTYzNTUzNjc1MCwiZXhwIjoxNjM1NTc5OTUwLCJpYXQiOjE2MzU1MzY3NTAsImlzcyI6Imh0dHBzOi8vYXV0aC5tb3ZpZXhjaGFuZ2UuY29tLyJ9.JjPzWagHLBwPbLMIZFwktMBMbAtpEC7Cc3JPbPJUYQzdfUszxMBuIRRshZ4Oqw-f8XIFMmY0c6U2UkW5rhLKTYSS0M16iPT87A6nbCT2sEDNpFtddsAN4eyJR5b68KzydBpK7NhB6mGitjyb0uYJYQyq91fjNpyL1rSQTLZezkY07XYOzqvLvPIQLeRj0a4mbUVVkkeXyGgsuk4s0x2hlvE7e3QQ4NsoXqqINxQlNvJErE5BX-doIwnMeov7WdQyLqs9mPPAigQphkOzvWHjlvp3kXKYXfsSpESu6I9gz5Byg0wmwokL2igCwHOU5zL8q8A8mdqsUWQVDiviikd8p62YQ5zTFNmzWjlCb5zDH4vS9TPyKVb35Mce6HGD7n16X2iN5h5XE8eCwIBtAc-Y5m51ji0SfUnghy44txh1QZ5x_dGH6pDxMjL7-KaOkWBRYdIxrBQB7ySd6EauY8hmiNDx6-rNH9h8GIzos7VyGrD3GQf0g_UzKiEFzvqZ9m-2c996cWLjGz03PTKhYo1f50RiwrNZfHq4DCMwF1cjg6yah0Z_-AaEwIUGMnspwODr8nuISIkxYhOXUhu-DkXqJz9KKjSVNj5_GoclMZo1oFYPZLLaPXpoXGK7Yi7uVarllFkFTYKu1Dlz0QI-_p3ql8GmW6HKhmCGubBMLdBw1T4'
-REQUEST_HEADERS = {
-    'authorization': f'Bearer {JWT_TOKEN}',
-    'accept': 'application/json',
-    'user-agent': 'showingpreviously'
-}
+JWT_TOKEN = None
 DAYS_AHEAD = 2
 CHAIN = Chain('Odeon')
+
+
+def get_jwt_token() -> str:
+    global JWT_TOKEN
+    if JWT_TOKEN is None:
+        driver = webdriver.Chrome()
+        driver.get('https://www.odeon.co.uk/')
+        jwt_finder = re.compile(r'"authToken":"(?P<jwt_token>.+?)"')
+        JWT_TOKEN = jwt_finder.search(driver.page_source).group('jwt_token')
+        driver.close()
+    return JWT_TOKEN
+
+
+def get_request_headers() -> dict[str, str]:
+    token = get_jwt_token()
+    return {
+        'authorization': f'Bearer {token}',
+        'accept': 'application/json',
+        'user-agent': 'showingpreviously'
+    }
 
 
 def get_cinemas_as_dict(cinemas_data: [dict[str, any]]) -> dict[str, Cinema]:
@@ -105,11 +122,12 @@ def get_showings_date(showings_data: any) -> [Showing]:
 
 
 def get_api_data() -> Iterator[dict[str, any]]:
+    request_headers = get_request_headers()
     current_date = datetime.now()
     end_date = current_date + timedelta(days=DAYS_AHEAD)
     while current_date < end_date:
         url = SHOWINGS_URL.format(date=current_date.strftime('%Y-%m-%d'))
-        r = requests.get(url, headers=REQUEST_HEADERS)
+        r = requests.get(url, headers=request_headers)
         if r.status_code != 200:
             raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {url}')
         try:
