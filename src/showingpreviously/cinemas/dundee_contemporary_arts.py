@@ -70,6 +70,12 @@ def get_film_info_from_url(film_url: str) -> (str, str, str, dict[str, any]):
             attributes['language'] = match.group('language')
             attributes['subtitled'] = match.group('subtitle')
 
+    # if the film format is specified
+    format_dt = metadata.find('dt', text='Format')
+    if format_dt is not None:
+        format = format_dt.findNext('dd').text
+        attributes['format'] = format
+
     return name, year, event_id, attributes
 
 
