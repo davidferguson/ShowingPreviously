@@ -1,7 +1,7 @@
 import pytz
 
 from showingpreviously.db import add_chain, add_cinema, add_screen, add_film, add_showing
-from showingpreviously.model import Showing, Chain
+from showingpreviously.model import Showing, ChainArchiver
 
 # import cinemas here, and add them to the all_cinema_chains list
 from showingpreviously.cinemas.centre_for_the_moving_image import CentreForTheMovingImage
@@ -33,7 +33,7 @@ def process_showing(showing: Showing):
     add_showing(film.name, film.year, chain.name, cinema.name, screen.name, utc_time, json_attributes)
 
 
-def run_chain(chain: Chain):
+def run_chain(chain: ChainArchiver):
     showings = chain.get_showings()
     for showing in showings:
         process_showing(showing)

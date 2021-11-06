@@ -20,8 +20,9 @@ def info_cmd(list_chains: bool) -> None:
     print(f'There are {len(all_cinema_chains)} cinema chains installed')
     chains_count, cinema_count, screen_count, film_count, showing_count = db_info()
     print(f'In the database we have {chains_count} chains, with {cinema_count} cinemas and {screen_count} screens, {film_count} films and {showing_count} showings.')
-    installed_chains = ', '.join([type(cinema_chain).__name__ for cinema_chain in all_cinema_chains])
-    print(f'The installed chains are: {installed_chains}')
+    if list_chains:
+        installed_chains = ', '.join([type(cinema_chain).__name__ for cinema_chain in all_cinema_chains])
+        print(f'The installed chains are: {installed_chains}')
 
 
 @cli.command('run')

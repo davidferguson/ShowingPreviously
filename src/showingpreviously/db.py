@@ -32,7 +32,7 @@ def add_film(film_name: str, film_year: str) -> None:
     conn.commit()
 
 
-def add_showing(film_name: str, film_year: str, chain_name: str, cinema_name: str, screen_name: str, time: datetime, json_attributes: str) -> None:
+def add_showing(film_name: str, film_year: str, chain_name: str, cinema_name: str, screen_name: str, time: datetime, json_attributes: dict[str, any]) -> None:
     epoch_time = int(time.timestamp())
     json_attributes_string = json.dumps(json_attributes)
     with closing(conn.cursor()) as cur:
