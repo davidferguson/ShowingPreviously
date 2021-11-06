@@ -33,6 +33,8 @@ def get_showing_dates() -> str:
 
 def get_tokens() -> (str, str):
     r = requests.get(PICTUREHOUSE_TOKEN_URL)
+    if r.status_code != 200:
+        raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {PICTUREHOUSE_TOKEN_URL}')
     all_cookies = r.headers.get('set-cookie')
     laravel_session = LARAVEL_PATTERN.search(all_cookies).group('laravel_session')
     soup = BeautifulSoup(r.text, features='html.parser')
@@ -42,6 +44,8 @@ def get_tokens() -> (str, str):
 
 def get_cinemas(laravel_session: str, token: str) -> dict[str, Cinema]:
     r = requests.post(CINEMAS_API_URL, cookies={'laravel_session': laravel_session}, data={'_token': token})
+    if r.status_code != 200:
+        raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {CINEMAS_API_URL}')
     try:
         cinema_data = r.json()
     except json.JSONDecodeError:
@@ -75,6 +79,8 @@ def get_film_year(film_link: str) -> str:
 
 def get_film_years(film_year_wants: [str]) -> dict[str, str]:
     r = requests.get(FILM_INDEX_URL)
+    if r.status_code != 200:
+        raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {FILM_INDEX_URL}')
     soup = BeautifulSoup(r.text, features='html.parser')
     films = {}
     for date in get_showing_dates():
@@ -126,6 +132,8 @@ def get_attributes(attributes: [dict[str, any]]) -> dict[str, any]:
 
 def get_showings(cinemas: [Cinema], laravel_session: str, token: str):
     r = requests.post(SHOWINGS_API_URL, cookies={'laravel_session': laravel_session}, data={'_token': token})
+    if r.status_code != 200:
+        raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {SHOWINGS_API_URL}')
     try:
         showings_data = r.json()
     except json.JSONDecodeError:
