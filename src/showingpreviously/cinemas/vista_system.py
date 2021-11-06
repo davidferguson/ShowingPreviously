@@ -7,28 +7,13 @@ from typing import Tuple, Iterator
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
 
-CINEMAS_URL = 'https://vwc.odeon.co.uk/WSVistaWebClient/ocapi/v1/browsing/master-data/sites'
-FILMS_URL = 'https://vwc.odeon.co.uk/WSVistaWebClient/ocapi/v1/browsing/master-data/films'
-SHOWINGS_URL = 'https://vwc.odeon.co.uk/WSVistaWebClient/ocapi/v1/browsing/master-data/showtimes/business-date/{date}'
-
-JWT_TOKEN = None
+CINEMAS_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/browsing/master-data/sites'
+FILMS_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/browsing/master-data/films'
+SHOWINGS_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/browsing/master-data/showtimes/business-date/{date}'
 DAYS_AHEAD = 2
-CHAIN = Chain('Odeon')
 
 
-def get_jwt_token() -> str:
-    global JWT_TOKEN
-    if JWT_TOKEN is None:
-        driver = webdriver.Chrome()
-        driver.get('https://www.odeon.co.uk/')
-        jwt_finder = re.compile(r'"authToken":"(?P<jwt_token>.+?)"')
-        JWT_TOKEN = jwt_finder.search(driver.page_source).group('jwt_token')
-        driver.close()
-    return JWT_TOKEN
-
-
-def get_request_headers() -> dict[str, str]:
-    token = get_jwt_token()
+def get_request_headers(token: str) -> dict[str, str]:
     return {
         'authorization': f'Bearer {token}',
         'accept': 'application/json',
@@ -102,7 +87,7 @@ def get_showing_attributes(showing_attributes: [str], attributes: dict[str, Tupl
     return json_attributes
 
 
-def get_showings_date(showings_data: any) -> [Showing]:
+def get_showings_date(showings_data: any, chain_name: str) -> [Showing]:
     showings = []
     showtimes = showings_data['showtimes']
 
@@ -117,16 +102,16 @@ def get_showings_date(showings_data: any) -> [Showing]:
         film = films[show['filmId']]
         start_time = datetime.fromisoformat(show['schedule']['startsAt']).replace(tzinfo=None)
         json_attributes = get_showing_attributes(show['attributeIds'], attributes)
-        showings.append(Showing(film, start_time, CHAIN, cinema, screen, json_attributes))
+        showings.append(Showing(film, start_time, Chain(chain_name), cinema, screen, json_attributes))
     return showings
 
 
-def get_api_data() -> Iterator[dict[str, any]]:
-    request_headers = get_request_headers()
+def get_api_data(api_url: str, token: str) -> Iterator[dict[str, any]]:
+    request_headers = get_request_headers(token)
     current_date = datetime.now()
     end_date = current_date + timedelta(days=DAYS_AHEAD)
     while current_date < end_date:
-        url = SHOWINGS_URL.format(date=current_date.strftime('%Y-%m-%d'))
+        url = SHOWINGS_URL.format(api_url=api_url, date=current_date.strftime('%Y-%m-%d'))
         r = requests.get(url, headers=request_headers)
         if r.status_code != 200:
             raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {url}')
@@ -138,9 +123,44 @@ def get_api_data() -> Iterator[dict[str, any]]:
         current_date += timedelta(days=1)
 
 
-class Odeon(ChainArchiver):
+class VistaSystem(ChainArchiver):
+    def __init__(self, chain_name: str, api_url: str):
+        super().__init__()
+        self.chain_name = chain_name
+        self.api_url = api_url
+
     def get_showings(self) -> [Showing]:
+        token = self.get_token()
         showings = []
-        for showings_data in get_api_data():
-            showings += get_showings_date(showings_data)
+        for showings_data in get_api_data(self.api_url, token):
+            showings += get_showings_date(showings_data, self.chain_name)
         return showings
+
+    def get_token(self) -> str:
+        pass
+
+
+# Odeon variant
+class Odeon(VistaSystem):
+    def __init__(self):
+        super().__init__('vwc.odeon.co.uk', 'Odeon')
+
+    def get_token(self) -> str:
+        driver = webdriver.Chrome()
+        driver.get('https://www.odeon.co.uk/')
+        jwt_finder = re.compile(r'"authToken":"(?P<jwt_token>.+?)"')
+        token = jwt_finder.search(driver.page_source).group('jwt_token')
+        driver.close()
+        return token
+
+
+# Curzon variant
+class Curzon(VistaSystem):
+    def __init__(self):
+        super().__init__('vwc.curzon.com', 'Curzon')
+
+    def get_token(self) -> str:
+        r = requests.get('https://www.curzon.com')
+        jwt_finder = re.compile(r'"authToken":"(?P<jwt_token>.+?)"')
+        token = jwt_finder.search(r.text).group('jwt_token')
+        return token
