@@ -1,10 +1,10 @@
 import json
 import re
 
-from selenium import webdriver
 from datetime import datetime, timedelta
 from typing import Tuple, Iterator
 import showingpreviously.requests as requests
+from showingpreviously.selenium import get_selenium_webdriver
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
 
 CINEMAS_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/browsing/master-data/sites'
@@ -146,11 +146,10 @@ class Odeon(VistaSystem):
         super().__init__('vwc.odeon.co.uk', 'Odeon')
 
     def get_token(self) -> str:
-        driver = webdriver.Chrome()
+        driver = get_selenium_webdriver()
         driver.get('https://www.odeon.co.uk/')
         jwt_finder = re.compile(r'"authToken":"(?P<jwt_token>.+?)"')
         token = jwt_finder.search(driver.page_source).group('jwt_token')
-        driver.close()
         return token
 
 
