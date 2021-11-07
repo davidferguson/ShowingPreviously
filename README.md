@@ -16,5 +16,6 @@ Installing this module will install the `showingpreviously` command. This has tw
 - [Dundee Contemporary Arts Cinema](https://www.dca.org.uk/whats-on/films) (added 2021-10-29)
 - [Empire Cinemas](https://www.empirecinemas.co.uk/) (added 2021-11-07)
 - [Picturehouse](https://www.picturehouses.com/) (added 2021-11-06)
+- [The Light Cinemas](https://lightcinemas.co.uk/) (added 2021-10-07)
 - [Vue UK](https://www.myvue.com/) (added 2021-10-31)
 - [Odeon](https://odeon.co.uk/) (added 2021-10-31)
