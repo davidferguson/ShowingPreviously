@@ -8,6 +8,7 @@ from showingpreviously.selenium import close_selenium_webdriver
 from showingpreviously.cinemas.centre_for_the_moving_image import CentreForTheMovingImage
 from showingpreviously.cinemas.cineworld import Cineworld
 from showingpreviously.cinemas.dundee_contemporary_arts import DundeeContemporaryArts
+from showingpreviously.cinemas.empire import Empire
 from showingpreviously.cinemas.vista_system import Odeon, Curzon
 from showingpreviously.cinemas.picturehouse import Picturehouse
 from showingpreviously.cinemas.vue import Vue
@@ -17,6 +18,7 @@ all_cinema_chains = [
     Cineworld(),
     Curzon(),
     DundeeContemporaryArts(),
+    Empire(),
     Odeon(),
     Picturehouse(),
     Vue(),
