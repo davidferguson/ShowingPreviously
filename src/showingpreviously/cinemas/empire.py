@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import re
 
 from datetime import datetime, timedelta
 import showingpreviously.requests as requests
@@ -9,6 +10,7 @@ SHOWINGS_URL = 'https://www.empirecinemas.co.uk/?page=nowshowing&tbx_site_id={ci
 
 DAYS_AHEAD = 2
 CHAIN = Chain('Empire Cinemas')
+SUBTITLE_LINK_PATTERN = re.compile(r'\'(?P<booking_link>https?://.+?)\'')
 
 
 def get_response(url: str) -> requests.Response:
@@ -90,19 +92,19 @@ def get_film(url: str, title: str) -> Film:
 
 
 def get_screen(showing) -> Screen:
-    try:
-        booking_link = showing.find('a')['href']
-        r = get_response(booking_link)
-        soup = BeautifulSoup(r.text, features='html.parser')
-        for info in soup.find_all('p', {'class': 'info'}):
-            if info.text.lower().startswith('in auditorium: '):
-                screen_name = info.text[15:]
-                return Screen(screen_name)
-    except:
-        # a bug in Empire's website means that sometimes a link is missing to book a ticket, and therefore we can't
-        # get the screen. No way round this for now, so just report that we don't know the screen.
-        pass
-    return Screen('Unknown Screen')
+    booking_link = showing.find('a', {'href': True})
+    continue_btn = showing.find('input', {'type': 'button', 'value': 'Continue'})
+    if continue_btn is not None:
+        continue_js = continue_btn['onclick']
+        booking_link_href = SUBTITLE_LINK_PATTERN.search(continue_js).group('booking_link')
+    else:
+        booking_link_href = booking_link['href']
+    r = get_response(booking_link_href)
+    soup = BeautifulSoup(r.text, features='html.parser')
+    for info in soup.find_all('p', {'class': 'info'}):
+        if info.text.lower().startswith('in auditorium: '):
+            screen_name = info.text[15:]
+            return Screen(screen_name)
 
 
 def get_showings_on_date(date: str, cinema_id: str, cinema: Cinema):
