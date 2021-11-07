@@ -56,7 +56,7 @@ def get_json_attributes_from_images(images: [any]) -> dict[str, any]:
         elif image['alt'] == 'EMPIRE Jnrs':
             attributes['carers-and-babies'] = True
         elif image['alt'] == 'EMPIRE Seniors':
-            attributes['seniors'] = True
+            attributes['senior'] = True
     if len(attributes['format']) == 0:
         del attributes['format']
     return attributes
