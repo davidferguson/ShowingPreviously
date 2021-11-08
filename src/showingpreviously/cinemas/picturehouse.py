@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
+from showingpreviously.consts import STANDARD_DAYS_AHEAD, UK_TIMEZONE
 
 
 PICTUREHOUSE_TOKEN_URL = 'https://www.picturehouses.com/'
@@ -13,7 +14,6 @@ CINEMAS_API_URL = 'https://www.picturehouses.com/ajax-cinema-list'
 SHOWINGS_API_URL = 'https://www.picturehouses.com/api/scheduled-movies-ajax'
 FILM_INDEX_URL = 'https://www.picturehouses.com/whats-on'
 FILM_DETAILS_URL = 'https://www.picturehouses.com/movie-details/000/{id}/{slug}'
-DAYS_AHEAD = 2
 
 CHAIN = Chain('Picturehouse')
 
@@ -25,7 +25,7 @@ JS_TO_URL_PATTERN = re.compile(r'"(?P<film_link>https?://.+?)"')
 
 def get_showing_dates() -> str:
     current_date = datetime.now()
-    end_date = current_date + timedelta(days=DAYS_AHEAD)
+    end_date = current_date + timedelta(days=STANDARD_DAYS_AHEAD)
     while current_date < end_date:
         yield current_date.strftime('%Y-%m-%d')
         current_date += timedelta(days=1)
@@ -54,7 +54,7 @@ def get_cinemas(laravel_session: str, token: str) -> dict[str, Cinema]:
     for cinema in cinema_data['cinema_list']:
         id = cinema['cinema_id']
         name = cinema['name']
-        cinemas[id] = Cinema(name, 'Europe/London')
+        cinemas[id] = Cinema(name, UK_TIMEZONE)
     return cinemas
 
 
@@ -148,7 +148,7 @@ def get_showings(cinemas: [Cinema], laravel_session: str, token: str):
     for movie in showings_data['movies']:
         title = movie['Title']
         if movie['ScheduledFilmId'] not in film_years:
-            # this is most likely because the film isn't showing in the next DAYS_AHEAD days, so we can skip it
+            # this is most likely because the film isn't showing in the next STANDARD_DAYS_AHEAD days, so we can skip it
             continue
 
         title, film_attributes = preprocess_film_name(title)
