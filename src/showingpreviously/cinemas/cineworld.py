@@ -3,12 +3,12 @@ import json
 from datetime import datetime, timedelta
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
+from showingpreviously.consts import STANDARD_DAYS_AHEAD, UK_TIMEZONE
 
 
 CINEMAS_API_URL = 'https://www.cineworld.co.uk/uk/data-api-service/v1/quickbook/10108/cinemas/with-event/until/{end_date}'
 SHOWINGS_API_URL = 'https://www.cineworld.co.uk/uk/data-api-service/v1/quickbook/10108/film-events/in-cinema/{cinema_id}/at-date/{date}'
 
-DAYS_AHEAD = 2
 CHAIN = Chain('Cineworld UK')
 
 
@@ -20,7 +20,7 @@ def get_response(url: str) -> requests.Response:
 
 
 def get_cinemas_as_dict() -> dict[str, Cinema]:
-    end_date = datetime.now() + timedelta(days=DAYS_AHEAD)
+    end_date = datetime.now() + timedelta(days=STANDARD_DAYS_AHEAD)
     url = CINEMAS_API_URL.format(end_date=end_date.strftime('%Y-%m-%d'))
     r = get_response(url)
     try:
@@ -31,7 +31,7 @@ def get_cinemas_as_dict() -> dict[str, Cinema]:
     for cinema in cinemas_data['body']['cinemas']:
         id = cinema['id']
         name = cinema['displayName']
-        timezone = 'Europe/London'
+        timezone = UK_TIMEZONE
         cinemas[id] = Cinema(name, timezone)
     return cinemas
 
@@ -89,7 +89,7 @@ def get_showings_date(cinema_id: str, cinema: Cinema, date: str) -> [Showing]:
 
 def get_showing_dates() -> str:
     current_date = datetime.now()
-    end_date = current_date + timedelta(days=DAYS_AHEAD)
+    end_date = current_date + timedelta(days=STANDARD_DAYS_AHEAD)
     while current_date < end_date:
         yield current_date.strftime('%Y-%m-%d')
         current_date += timedelta(days=1)
