@@ -5,13 +5,13 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
+from showingpreviously.consts import UK_TIMEZONE
 
 
 CINEMAS_INDEX_URL = 'https://www.merlincinemas.co.uk/'
 FILM_URL = 'https://helston.merlincinemas.co.uk/ajax/film/{film_id}'
 SCREEN_NAME_PATTERN = re.compile(r'Showing In&nbsp;(?P<screen_name>.+?) -')
 
-DAYS_AHEAD = 2
 CHAIN = Chain('Merlin Cinemas')
 
 
@@ -32,7 +32,7 @@ def get_cinemas_as_dict() -> dict[str, Cinema]:
         cinema_url = cinema_link['href']
         if 'regal-theatre' in cinema_url:
             continue  # skip the duplicate theatre
-        cinemas[cinema_url] = Cinema(cinema_name, 'Europe/London')
+        cinemas[cinema_url] = Cinema(cinema_name, UK_TIMEZONE)
     return cinemas
 
 
