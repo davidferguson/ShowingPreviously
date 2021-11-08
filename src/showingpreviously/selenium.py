@@ -1,4 +1,4 @@
-from selenium import webdriver
+from selenium import webdriver, common
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from typing import Optional
@@ -10,7 +10,10 @@ WEBDRIVER: Optional[WebDriver] = None
 def get_selenium_webdriver() -> WebDriver:
     global WEBDRIVER
     if WEBDRIVER is None:
-        WEBDRIVER = webdriver.Chrome()
+        try:
+            WEBDRIVER = webdriver.Chrome()
+        except common.exceptions.WebDriverException:
+            WEBDRIVER = webdriver.Firefox()
     return WEBDRIVER
 
 
