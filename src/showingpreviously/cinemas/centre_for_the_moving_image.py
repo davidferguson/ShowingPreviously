@@ -1,4 +1,5 @@
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
+from showingpreviously.consts import UK_TIMEZONE
 import showingpreviously.requests as requests
 
 import datetime
@@ -9,8 +10,8 @@ DAYS_PREVIOUS = 3
 
 
 CHAIN = Chain(name='Centre for the Moving Image')
-EDINBURGH_CINEMA = Cinema(name='Filmhouse Edinburgh', timezone='Europe/London')
-BELMONT_CINEMA = Cinema(name='Belmont Filmhouse', timezone='Europe/London')
+EDINBURGH_CINEMA = Cinema(name='Filmhouse Edinburgh', timezone=UK_TIMEZONE)
+BELMONT_CINEMA = Cinema(name='Belmont Filmhouse', timezone=UK_TIMEZONE)
 
 
 KNOWN_SHOWING_TYPE_ATTRIBUTES = [

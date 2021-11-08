@@ -4,7 +4,7 @@ import json
 from contextlib import closing
 from datetime import datetime
 
-from showingpreviously.consts import data_dir, DATABASE_NAME
+from showingpreviously.consts import DATA_DIR, DATABASE_NAME
 
 
 def add_chain(chain_name: str) -> None:
@@ -62,6 +62,6 @@ def db_info() -> (int, int, int, int):
     return chains_count, cinema_count, screen_count, film_count, showing_count
 
 
-database_location = os.path.join(data_dir, DATABASE_NAME)
+database_location = os.path.join(DATA_DIR, DATABASE_NAME)
 conn = sqlite3.connect(database_location)
 create_table()

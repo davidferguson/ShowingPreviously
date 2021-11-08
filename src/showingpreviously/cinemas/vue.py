@@ -3,12 +3,12 @@ import json
 from datetime import datetime, timedelta
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
+from showingpreviously.consts import STANDARD_DAYS_AHEAD, UK_TIMEZONE
 
 
 CINEMAS_API_URL = 'https://www.myvue.com/data/locations/'
 SHOWINGS_API_URL = 'https://www.myvue.com/data/filmswithshowings/{cinema_id}?requestedDate={date}'
 
-DAYS_AHEAD = 2
 CHAIN = Chain('VUE UK')
 
 
@@ -30,7 +30,7 @@ def get_cinemas_as_dict() -> dict[str, Cinema]:
         for cinema in alphabetical['cinemas']:
             id = cinema['id']
             name = cinema['name']
-            timezone = 'Europe/London'
+            timezone = UK_TIMEZONE
             cinemas[id] = Cinema(name, timezone)
     return cinemas
 
@@ -88,7 +88,7 @@ def get_showings_date(cinema_id: str, cinema: Cinema, date: str) -> [Showing]:
 
 def get_showing_dates() -> str:
     current_date = datetime.now()
-    end_date = current_date + timedelta(days=DAYS_AHEAD)
+    end_date = current_date + timedelta(days=STANDARD_DAYS_AHEAD)
     while current_date < end_date:
         yield current_date.strftime('%Y-%m-%d')
         current_date += timedelta(days=1)

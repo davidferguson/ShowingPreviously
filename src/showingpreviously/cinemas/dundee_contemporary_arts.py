@@ -7,15 +7,15 @@ from datetime import datetime, timedelta
 
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
+from showingpreviously.consts import STANDARD_DAYS_AHEAD, UK_TIMEZONE
 
 
 FILM_INDEX_URL = 'https://www.dca.org.uk/whats-on/films?from={start}&to={end}'
 EVENT_API_URL = 'https://www.dca.org.uk/api/event-instances/{id}'
 SCREEN_URL = 'https://tickets.dca.org.uk/dundeeca/website/ChooseSeats.aspx?EventInstanceId={showing_id}'
-DAYS_AHEAD = 2
 
 CHAIN = Chain('Dundee Contemporary Arts')
-CINEMA = Cinema('Dundee Contemporary Arts', 'Europe/London')
+CINEMA = Cinema('Dundee Contemporary Arts', UK_TIMEZONE)
 
 SUBTITLE_PATTERN = re.compile(r'(?P<language>.+?) with (?P<subtitle>.+?) subtitles')
 
@@ -29,7 +29,7 @@ def get_response(url: str) -> requests.Response:
 
 def get_film_index_url() -> str:
     start_date = datetime.now()
-    end_date = start_date + timedelta(days=DAYS_AHEAD)
+    end_date = start_date + timedelta(days=STANDARD_DAYS_AHEAD)
     start_str = start_date.strftime('%Y-%m-%d')
     end_str = end_date.strftime('%Y-%m-%d')
     return FILM_INDEX_URL.format(start=start_str, end=end_str)

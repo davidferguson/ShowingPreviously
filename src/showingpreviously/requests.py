@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from requests import *
 
-from showingpreviously.consts import data_dir, URL_LOG_NAME
+from showingpreviously.consts import DATA_DIR, URL_LOG_NAME
 
 
 for name in ['head', 'get', 'post', 'put', 'patch', 'delete']:
@@ -12,7 +12,7 @@ for name in ['head', 'get', 'post', 'put', 'patch', 'delete']:
 
 def log_url(url: str):
     log_file = datetime.now().strftime(URL_LOG_NAME)
-    log_file = os.path.join(data_dir, log_file)
+    log_file = os.path.join(DATA_DIR, log_file)
     with open(log_file, 'a') as f:
         f.write('%s\n' % url)
 
