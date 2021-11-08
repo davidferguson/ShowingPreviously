@@ -5,13 +5,13 @@ from typing import Optional
 
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
+from showingpreviously.consts import STANDARD_DAYS_AHEAD, UK_TIMEZONE, UNKNOWN_FILM_YEAR
 
 
 CINEMAS_URL = 'https://walsall.thelight.co.uk'
 SHOWINGS_URL = '{cinema_url}/resource/services/miniguide/data.ashx'
 SCREEN_API_URL = '{cinema_url}/api/book/cinema/session'
 
-DAYS_AHEAD = 2
 TOKEN_PATTERN = re.compile(r'\'Token\':\s*\'(?P<token>.+?)\'')
 CINEMAS_JSON_PATTERN = re.compile(r'var\s+__sites\s*=\s*(?P<cinemas_json>.+?)\s*;')
 SHOWINGS_JSON_PATTERN = re.compile(r'var\s+__gfminiguidedata\s*=\s*(?P<showings_json>.+?)\s*;')
@@ -49,7 +49,7 @@ def get_cinemas_as_dict() -> dict[str, Cinema]:
     for cinema in cinemas_data:
         cinema_name = cinema['title']
         cinema_url = cinema['url']
-        cinemas[cinema_url] = Cinema(cinema_name, 'Europe/London')
+        cinemas[cinema_url] = Cinema(cinema_name, UK_TIMEZONE)
     return cinemas
 
 
@@ -116,9 +116,9 @@ def get_showings(cinema_url: str, cinema: Cinema) -> [Showing]:
     showings = []
     for film_data in showings_data['Schedule']:
         film_name = film_data['Title']
-        film_year = '0'  # todo: somehow get the year
+        film_year = UNKNOWN_FILM_YEAR
         film = Film(film_name, film_year)
-        for i in range(0, min(DAYS_AHEAD, len(film_data['Dates']))):
+        for i in range(0, min(STANDARD_DAYS_AHEAD, len(film_data['Dates']))):
             day = film_data['Dates'][i]
             date = day['Key']
             if 'Sessions' not in day:
