@@ -1,5 +1,5 @@
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
-from showingpreviously.consts import UK_TIMEZONE
+from showingpreviously.consts import UK_TIMEZONE, UNKNOWN_FILM_YEAR
 import showingpreviously.requests as requests
 
 import datetime
@@ -122,7 +122,7 @@ def get_film_page_details(cinema: dict[str, any], film_url: str) -> (str, dict[s
         raise CinemaArchiverException(f'Got status code {req.status_code} when fetching URL {film_url}')
     soup = BeautifulSoup(req.text, features='html.parser')
     page_title = soup.find('title').text
-    release_year = ''
+    release_year = UNKNOWN_FILM_YEAR
     attributes = {}
     if req.status_code != 403 and 'Access Denied' not in page_title:
         details_list = soup.find('div', class_='event-detail')
