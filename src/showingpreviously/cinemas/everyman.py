@@ -3,12 +3,12 @@ import json
 from datetime import datetime, timedelta
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
+from showingpreviously.consts import UK_TIMEZONE
 
 
 CINEMAS_API_URL = 'https://www.everymancinema.com/cinemas'
 SHOWINGS_API_URL = 'https://movieeverymanapi.peachdigital.com/movies/13/{cinema_id}'
 
-DAYS_AHEAD = 2
 CHAIN = Chain('Everyman Cinemas')
 
 
@@ -29,8 +29,7 @@ def get_cinemas_as_dict() -> dict[str, Cinema]:
     for cinema in cinemas_data:
         id = cinema['CinemaId']
         name = cinema['CinemaName']
-        timezone = 'Europe/London'
-        cinemas[id] = Cinema(name, timezone)
+        cinemas[id] = Cinema(name, UK_TIMEZONE)
     return cinemas
 
 
