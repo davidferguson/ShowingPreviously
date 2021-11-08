@@ -6,11 +6,11 @@ from typing import Tuple, Iterator
 import showingpreviously.requests as requests
 from showingpreviously.selenium import get_selenium_webdriver
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
+from showingpreviously.consts import STANDARD_DAYS_AHEAD
 
 CINEMAS_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/browsing/master-data/sites'
 FILMS_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/browsing/master-data/films'
 SHOWINGS_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/browsing/master-data/showtimes/business-date/{date}'
-DAYS_AHEAD = 2
 
 
 def get_request_headers(token: str) -> dict[str, str]:
@@ -26,7 +26,6 @@ def get_cinemas_as_dict(cinemas_data: [dict[str, any]]) -> dict[str, Cinema]:
     for cinema in cinemas_data:
         id = cinema['id']
         name = cinema['name']['text']
-        # timezone = cinema['ianaTimeZoneName']
         timezone = 'UTC'  # Odeon gives times in UTC already, so there is no need to convert them
         cinemas[id] = Cinema(name, timezone)
     return cinemas
@@ -109,7 +108,7 @@ def get_showings_date(showings_data: any, chain_name: str) -> [Showing]:
 def get_api_data(api_url: str, token: str) -> Iterator[dict[str, any]]:
     request_headers = get_request_headers(token)
     current_date = datetime.now()
-    end_date = current_date + timedelta(days=DAYS_AHEAD)
+    end_date = current_date + timedelta(days=STANDARD_DAYS_AHEAD)
     while current_date < end_date:
         url = SHOWINGS_URL.format(api_url=api_url, date=current_date.strftime('%Y-%m-%d'))
         r = requests.get(url, headers=request_headers)
