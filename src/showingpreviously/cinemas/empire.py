@@ -4,11 +4,11 @@ import re
 from datetime import datetime, timedelta
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
+from showingpreviously.consts import STANDARD_DAYS_AHEAD, UK_TIMEZONE
 
 CINEMAS_URL = 'https://www.empirecinemas.co.uk/select_cinema_first/ci/'
 SHOWINGS_URL = 'https://www.empirecinemas.co.uk/?page=nowshowing&tbx_site_id={cinema_id}&scope={date}'
 
-DAYS_AHEAD = 2
 CHAIN = Chain('Empire Cinemas')
 SUBTITLE_LINK_PATTERN = re.compile(r'\'(?P<booking_link>https?://.+?)\'')
 
@@ -30,13 +30,13 @@ def get_cinemas() -> dict[str, Cinema]:
         if id == '':
             continue
         name = option.text
-        cinemas[id] = Cinema(name, 'Europe/London')
+        cinemas[id] = Cinema(name, UK_TIMEZONE)
     return cinemas
 
 
 def get_showing_dates() -> str:
     current_date = datetime.now()
-    end_date = current_date + timedelta(days=DAYS_AHEAD)
+    end_date = current_date + timedelta(days=STANDARD_DAYS_AHEAD)
     while current_date < end_date:
         yield current_date.strftime('%d/%m/%Y')
         current_date += timedelta(days=1)
