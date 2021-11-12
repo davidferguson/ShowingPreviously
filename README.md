@@ -14,4 +14,5 @@ Installing this module will install the `showingpreviously` command. This has tw
 - [Centre for the Moving Image](https://www.cmi-scotland.co.uk/) ([Filmhouse Edinburgh](https://www.filmhousecinema.com/) and [Belmont Filmhouse](https://www.belmontfilmhouse.com/)) (added 2021-10-30)
 - [Reel Cinemas](https://reelcinemas.co.uk/) (added 2021-11-10)
 - [Dundee Contemporary Arts Cinema](https://www.dca.org.uk/whats-on/films) (added 2021-10-29)
+- [Northern Morris Cinemas](https://nm-cinemas.co.uk/) (added 2021-11-12)
 - [Vue UK](https://www.myvue.com/) (added 2021-10-31)
