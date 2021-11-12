@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from bs4 import BeautifulSoup
 
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
@@ -13,7 +14,7 @@ SHOWINGS_API_URL = 'https://data.cinemas-online.co.uk/cinema/shows?format=now&Ve
 def get_response(url: str, origin: str) -> requests.Response:
     r = requests.get(url, headers={'origin': origin})
     if r.status_code != 200:
-        raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {url}')
+        raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {url} with origin {origin}')
     return r
 
 
@@ -79,18 +80,35 @@ def get_showings(cinema_id: str, cinema: Cinema, origin: str, chain: Chain) -> [
 
 
 class CinemasOnline(ChainArchiver):
-    def __init__(self, chain: Chain, origin: str):
+    def __init__(self, chain: Chain, origins: [str]):
         self.chain = chain
-        self.origin = origin
+        self.origins = origins
 
     def get_showings(self) -> [Showing]:
         showings = []
-        cinemas = get_cinemas_as_dict(self.origin)
-        for cinema_id, cinema in cinemas.items():
-            showings += get_showings(cinema_id, cinema, self.origin, self.chain)
+        for origin in self.origins:
+            cinemas = get_cinemas_as_dict(origin)
+            for cinema_id, cinema in cinemas.items():
+                showings += get_showings(cinema_id, cinema, origin, self.chain)
         return showings
 
 
 class ReelCinemas(CinemasOnline):
     def __init__(self):
-        super().__init__(Chain('Reel Cinemas'), 'https://reelcinemas.co.uk')
+        super().__init__(Chain('Reel Cinemas'), ['https://reelcinemas.co.uk'])
+
+
+class NorthernMorris(CinemasOnline):
+    def __init__(self):
+        cinema_origins = self.get_origins()
+        super().__init__(Chain('Northern Morris Cinemas'), cinema_origins)
+
+    def get_origins(self):
+        r = get_response('https://nm-cinemas.co.uk/', '')
+        soup = BeautifulSoup(r.text, features='html.parser')
+        cinema_origins = []
+        for cinema_block in soup.find_all('div', {'class': 'venue-container'}):
+            link = cinema_block.find('a', {'href': True})['href']
+            link = link.replace('http:', 'https:').replace('.co.uk/', '.co.uk')
+            cinema_origins.append(link)
+        return cinema_origins
