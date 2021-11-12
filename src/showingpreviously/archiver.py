@@ -4,11 +4,13 @@ from showingpreviously.db import add_chain, add_cinema, add_screen, add_film, ad
 from showingpreviously.model import Showing, ChainArchiver
 
 # import cinemas here, and add them to the all_cinema_chains list
+from showingpreviously.cinemas.arc import ARC
 from showingpreviously.cinemas.centre_for_the_moving_image import CentreForTheMovingImage
 from showingpreviously.cinemas.dundee_contemporary_arts import DundeeContemporaryArts
 from showingpreviously.cinemas.vue import Vue
 
 all_cinema_chains = [
+    ARC(),
     CentreForTheMovingImage(),
     DundeeContemporaryArts(),
     Vue(),
