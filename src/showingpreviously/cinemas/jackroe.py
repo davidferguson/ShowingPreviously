@@ -23,6 +23,10 @@ SCOTTCINEMAS_BASE_URL = 'https://www.scottcinemas.co.uk'
 SCOTTCINEMAS_CHAIN = Chain('Scott Cinemas')
 SCOTTCINEMAS_LOCATION_CODE_PATTERN = re.compile(r'/websales/sales/(?P<location_code>.+?)/actual_book')
 
+WTWCINEMAS_BASE_URL = 'https://wtwcinemas.co.uk'
+WTWCINEMAS_CHAIN = Chain('WTW Cinemas')
+WTWCINEMAS_LOCATION_CODE_PATTERN = re.compile(r'/websales/sales/(?P<location_code>.+?)/book')
+
 
 def get_response(url: str) -> requests.Response:
     r = requests.get(url)
@@ -136,5 +140,27 @@ class ScottCinemas(JackRoe):
             booking_link = cinema_url + soup.find('a', href=lambda href: href and '/book-now/' in href)['href']
             r = get_response(booking_link)
             cinema_id = SCOTTCINEMAS_LOCATION_CODE_PATTERN.search(r.text).group('location_code')
+            cinemas[cinema_id] = Cinema(cinema_name, UK_TIMEZONE)
+        return cinemas
+
+
+class WTWCinemas(JackRoe):
+    def __init__(self):
+        super().__init__(WTWCINEMAS_CHAIN)
+
+    def get_cinemas(self) -> dict[str, Cinema]:
+        r = get_response(WTWCINEMAS_BASE_URL)
+        soup = BeautifulSoup(r.text, features='html.parser')
+        list = soup.find('ul', {'class': 'listing--items'})
+        cinemas = {}
+        for a in list.find_all('a', {'data-location': True}):
+            cinema_name = a.text.replace('\n', ' - ').strip()
+            location_code = a['data-location']
+            cinema_link = f'{WTWCINEMAS_BASE_URL}/{location_code}/whats-on/'
+            r = get_response(cinema_link)
+            soup = BeautifulSoup(r.text, features='html.parser')
+            booking_link = soup.find('a', href=lambda href: href and '/book' in href)['href']
+            r = get_response(booking_link)
+            cinema_id = WTWCINEMAS_LOCATION_CODE_PATTERN.search(r.text).group('location_code')
             cinemas[cinema_id] = Cinema(cinema_name, UK_TIMEZONE)
         return cinemas
