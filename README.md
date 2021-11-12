@@ -15,3 +15,4 @@ Installing this module will install the `showingpreviously` command. This has tw
 - [Dundee Contemporary Arts Cinema](https://www.dca.org.uk/whats-on/films) (added 2021-10-29)
 - [Movie House Cinemas](https://www.moviehouse.co.uk/) (added 2021-11-09)
 - [Vue UK](https://www.myvue.com/) (added 2021-10-31)
+- [WTW Cinemas](https://wtwcinemas.co.uk/) (added 2021-11-12)
