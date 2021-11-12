@@ -19,6 +19,10 @@ MOVIEHOUSE_CINEMAS_URL = f'{MOVIEHOUSE_BASE_URL}/Home/AllCinemas'
 MOVIEHOUSE_CHAIN = Chain('Movie House Cinemas')
 MOVIEHOUSE_LOCATION_CODE_PATTERN = re.compile(r'var\s+location\s*=\s*"(?P<location_code>.+?)";')
 
+SCOTTCINEMAS_BASE_URL = 'https://www.scottcinemas.co.uk'
+SCOTTCINEMAS_CHAIN = Chain('Scott Cinemas')
+SCOTTCINEMAS_LOCATION_CODE_PATTERN = re.compile(r'/websales/sales/(?P<location_code>.+?)/actual_book')
+
 
 def get_response(url: str) -> requests.Response:
     r = requests.get(url)
@@ -36,7 +40,7 @@ def get_attributes(html: str) -> dict[str, any]:
     return attributes
 
 
-def get_showings_date(cinema_id: str, cinema: Cinema, chain: Chain, showing_dates: str) -> [Showing]:
+def get_showings_date(cinema_id: str, cinema: Cinema, chain: Chain, showing_dates: [str]) -> [Showing]:
     url = SHOWING_LIST_URL.format(cinema_code=cinema_id)
     r = get_response(url)
     soup = BeautifulSoup(r.text, features='html.parser')
@@ -108,5 +112,29 @@ class MovieHouse(JackRoe):
             cinema_link = MOVIEHOUSE_BASE_URL + cinema_link['href']
             r = get_response(cinema_link)
             cinema_id = MOVIEHOUSE_LOCATION_CODE_PATTERN.search(r.text).group('location_code')
+            cinemas[cinema_id] = Cinema(cinema_name, UK_TIMEZONE)
+        return cinemas
+
+
+class ScottCinemas(JackRoe):
+    def __init__(self):
+        super().__init__(SCOTTCINEMAS_CHAIN)
+
+    def get_cinemas(self) -> dict[str, Cinema]:
+        r = get_response(SCOTTCINEMAS_BASE_URL)
+        soup = BeautifulSoup(r.text, features='html.parser')
+        select = soup.find('select', {'name': 'cinema_location'})
+        scott_cinemas = select.find('optgroup', {'label': 'Scott Cinemas'})
+        cinemas = {}
+        for cinema_option in scott_cinemas.find_all('option', {'value': True}):
+            cinema_name = cinema_option.text.strip()
+            cinema_id = cinema_option['value']
+            cinema_link = f'{SCOTTCINEMAS_BASE_URL}/switchto/{cinema_id}'
+            r = get_response(cinema_link)
+            cinema_url = r.url
+            soup = BeautifulSoup(r.text, features='html.parser')
+            booking_link = cinema_url + soup.find('a', href=lambda href: href and '/book-now/' in href)['href']
+            r = get_response(booking_link)
+            cinema_id = SCOTTCINEMAS_LOCATION_CODE_PATTERN.search(r.text).group('location_code')
             cinemas[cinema_id] = Cinema(cinema_name, UK_TIMEZONE)
         return cinemas
