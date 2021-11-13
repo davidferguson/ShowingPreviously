@@ -75,7 +75,7 @@ def get_showings_date(cinema_id: str, cinema: Cinema, dates: [str]) -> [Showing]
     return showings
 
 
-def get_showing_dates() -> str:
+def get_showing_dates() -> [str]:
     current_date = datetime.now()
     end_date = current_date + timedelta(days=STANDARD_DAYS_AHEAD)
     dates = []
