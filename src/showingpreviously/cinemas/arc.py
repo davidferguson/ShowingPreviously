@@ -60,7 +60,8 @@ def get_film(film_url: str, title: str) -> Film:
     r = get_response(film_url)
     soup = BeautifulSoup(r.text, features='html.parser')
     release_date = soup.find('b', text='Release Date:').next_sibling.text.strip()
-    return Film(title, release_date)
+    release_year = release_date[-4:]
+    return Film(title, release_year)
 
 
 def get_showings_date(cinema_url: str, cinema: Cinema) -> [Showing]:
