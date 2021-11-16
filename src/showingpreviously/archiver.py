@@ -55,3 +55,4 @@ def run_single(name: str) -> None:
     for cinema_chain in all_cinema_chains:
         if type(cinema_chain).__name__ == name:
             run_chain(cinema_chain)
+    close_selenium_webdriver()

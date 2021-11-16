@@ -123,7 +123,7 @@ def get_api_data(api_url: str, token: str) -> Iterator[dict[str, any]]:
 
 
 class VistaSystem(ChainArchiver):
-    def __init__(self, chain_name: str, api_url: str):
+    def __init__(self, api_url: str, chain_name: str,):
         super().__init__()
         self.chain_name = chain_name
         self.api_url = api_url
@@ -158,7 +158,7 @@ class Curzon(VistaSystem):
         super().__init__('vwc.curzon.com', 'Curzon')
 
     def get_token(self) -> str:
-        r = requests.get('https://www.curzon.com')
+        r = requests.get('https://www.curzon.com', headers={'user-agent': 'showingpreviously'})
         jwt_finder = re.compile(r'"authToken":"(?P<jwt_token>.+?)"')
         token = jwt_finder.search(r.text).group('jwt_token')
         return token
