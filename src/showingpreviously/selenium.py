@@ -14,11 +14,13 @@ def get_selenium_webdriver() -> WebDriver:
     if WEBDRIVER is None:
         try:
             chrome_options = ChromeOptions()
-            chrome_options.headless = True
+            # running headless will stop cloudflare from working
+            # chrome_options.headless = True
             WEBDRIVER = webdriver.Chrome(options=chrome_options)
         except common.exceptions.WebDriverException:
             firefox_options = FirefoxOptions()
-            firefox_options.headless = True
+            # running headless will stop cloudflare from working
+            # firefox_options.headless = True
             WEBDRIVER = webdriver.Firefox(options=firefox_options)
     return WEBDRIVER
 
