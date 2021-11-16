@@ -2,17 +2,21 @@ import pytz
 
 from showingpreviously.db import add_chain, add_cinema, add_screen, add_film, add_showing
 from showingpreviously.model import Showing, ChainArchiver
+from showingpreviously.selenium import close_selenium_webdriver
 
 # import cinemas here, and add them to the all_cinema_chains list
 from showingpreviously.cinemas.centre_for_the_moving_image import CentreForTheMovingImage
 from showingpreviously.cinemas.cineworld import Cineworld
 from showingpreviously.cinemas.dundee_contemporary_arts import DundeeContemporaryArts
+from showingpreviously.cinemas.vista_system import Odeon, Curzon
 from showingpreviously.cinemas.vue import Vue
 
 all_cinema_chains = [
     CentreForTheMovingImage(),
     Cineworld(),
+    Curzon(),
     DundeeContemporaryArts(),
+    Odeon(),
     Vue(),
 ]
 
@@ -44,9 +48,11 @@ def run_chain(chain: ChainArchiver):
 def run_all() -> None:
     for cinema_chain in all_cinema_chains:
         run_chain(cinema_chain)
+    close_selenium_webdriver()
 
 
 def run_single(name: str) -> None:
     for cinema_chain in all_cinema_chains:
         if type(cinema_chain).__name__ == name:
             run_chain(cinema_chain)
+    close_selenium_webdriver()
