@@ -1,4 +1,6 @@
 from selenium import webdriver, common
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from typing import Optional
@@ -11,9 +13,13 @@ def get_selenium_webdriver() -> WebDriver:
     global WEBDRIVER
     if WEBDRIVER is None:
         try:
-            WEBDRIVER = webdriver.Chrome()
+            chrome_options = ChromeOptions()
+            chrome_options.headless = True
+            WEBDRIVER = webdriver.Chrome(options=chrome_options)
         except common.exceptions.WebDriverException:
-            WEBDRIVER = webdriver.Firefox()
+            firefox_options = FirefoxOptions()
+            firefox_options.headless = True
+            WEBDRIVER = webdriver.Firefox(options=firefox_options)
     return WEBDRIVER
 
 
