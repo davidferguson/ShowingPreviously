@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
-from showingpreviously.consts import STANDARD_DAYS_AHEAD, UK_TIMEZONE
+from showingpreviously.consts import STANDARD_DAYS_AHEAD, UK_TIMEZONE, UNKNOWN_FILM_YEAR
 
 
 PICTUREHOUSE_TOKEN_URL = 'https://www.picturehouses.com/'
@@ -68,7 +68,7 @@ def get_film_year(film_link: str) -> str:
     r = requests.get(film_link)
     if r.status_code != 200:
         # sometimes films don't exist for some reason. nothing we can do about that
-        return '0'
+        return UNKNOWN_FILM_YEAR
 
     soup = BeautifulSoup(r.text, features='html.parser')
     metadata = soup.find('div', {'class': 'directorDiv'})
