@@ -13,6 +13,7 @@ from showingpreviously.cinemas.vista_system import Odeon, Curzon
 from showingpreviously.cinemas.picturehouse import Picturehouse
 from showingpreviously.cinemas.lpvs import TheLight
 from showingpreviously.cinemas.parkway import Parkway
+from showingpreviously.cinemas.glasgow_film_theatre import GlasgowFilmTheatre
 from showingpreviously.cinemas.vue import Vue
 
 all_cinema_chains = [
@@ -25,6 +26,7 @@ all_cinema_chains = [
     Parkway(),
     Picturehouse(),
     TheLight(),
+    GlasgowFilmTheatre(),
     Vue(),
 ]
 

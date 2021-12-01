@@ -18,5 +18,6 @@ Installing this module will install the `showingpreviously` command. This has tw
 - [Parkway Cinemas](https://parkwaycinemas.co.uk) (added 2021-11-14)
 - [Picturehouse](https://www.picturehouses.com/) (added 2021-11-06)
 - [The Light Cinemas](https://lightcinemas.co.uk/) (added 2021-10-07)
+- [Glasgow Film Theatre](https://glasgowfilm.org/) (added 2021-12-01)
 - [Vue UK](https://www.myvue.com/) (added 2021-10-31)
 - [Odeon](https://odeon.co.uk/) (added 2021-10-31)
