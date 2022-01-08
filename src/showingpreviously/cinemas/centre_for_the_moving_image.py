@@ -1,9 +1,10 @@
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
-from showingpreviously.consts import UK_TIMEZONE, UNKNOWN_FILM_YEAR
+from showingpreviously.consts import UK_TIMEZONE, UNKNOWN_FILM_YEAR, STANDARD_DAYS_AHEAD
 import showingpreviously.requests as requests
 
 import datetime
 from bs4 import BeautifulSoup
+from typing import Iterator
 
 
 DAYS_PREVIOUS = 3
@@ -20,8 +21,18 @@ KNOWN_SHOWING_TYPE_ATTRIBUTES = [
     'captioned',
     'carers-and-babies',
     'three-d',
+    'format-35mm',
+    'format-70mm',
+    'format-digital',
 ]
 
+KNOWN_SHOWING_FORMATS = [
+    '70mm',
+    '35mm',
+    'digital',
+]
+
+DEFAULT_SHOWING_FORMAT = 'digital'
 
 CINEMAS_LIST = [
     {'base_url': 'https://www.filmhousecinema.com', 'cinema': EDINBURGH_CINEMA},
@@ -31,6 +42,7 @@ CINEMAS_LIST = [
 
 film_page_details_cache = {}
 
+
 def get_response(url: str) -> requests.Response:
     r = requests.get(url)
     if r.status_code != 200:
@@ -38,11 +50,15 @@ def get_response(url: str) -> requests.Response:
     return r
 
 
-def get_days_to_fetch() -> [datetime.datetime]:
-    # Fetch films from the range of (today - DAYS_PREVIOUS) to today
-    base = datetime.date.today()
-    date_list = [base - datetime.timedelta(days=x) for x in range(DAYS_PREVIOUS)]
-    return date_list
+def get_showing_dates() -> Iterator[datetime.datetime]:
+    # start from tomorrow, not today, since the Filmhouse shows *all* the showings
+    # for a given day, including those that have already happened, and those can
+    # break the archiver if we need to fetch the booking info for them
+    current_date = datetime.date.today() + datetime.timedelta(days=1)
+    end_date = current_date + datetime.timedelta(days=STANDARD_DAYS_AHEAD)
+    while current_date < end_date:
+        yield current_date
+        current_date += datetime.timedelta(days=1)
 
 
 def get_showings_for_date(cinema: dict[str, any], fetch_date: datetime.date) -> [Showing]:
@@ -59,41 +75,72 @@ def get_showings_for_date(cinema: dict[str, any], fetch_date: datetime.date) -> 
 
 def get_showing_item(cinema: dict[str, any], showing_date_str: str, showing_item: BeautifulSoup) -> [Showing]:
     showing_list = []
-    name = showing_item.find('span', class_='field--name-title').text
+    film_name = showing_item.find('span', class_='field--name-title').text
     more_info_link = showing_item.find('a', class_='btn-more-info')['href']
-    release_year, attributes = get_film_page_details(cinema, more_info_link)
+    release_year, film_attributes = get_film_page_details(cinema, more_info_link)
     showing_times = showing_item.find('div', class_='screening-times-btns')
-    film = Film(name=name, year=release_year)
-    if film.name.lower().endswith(' (baby + carer)'):
-        film.name = film.name[:-len(' (baby + carer)')]
-        attributes['carers-and-babies'] = True
-    if film.name.lower().startswith('senior selections: '):
-        film.name = film.name[len('senior selections: '):]
-        attributes['seniors'] = True
+    film_name = extract_attributes_from_name(film_name, film_attributes)
+    film = Film(name=film_name, year=release_year)
+
     for showing_time in showing_times.find_all('a', class_='btn-times'):
         showing_time_str = showing_time.text.strip().split('\n')[0].strip()
         showing_screen = Screen(name=showing_time.find('span', class_='screen').text.strip())
-        if showing_time_str == 'Watch Now' or showing_screen.name == 'On Demand':
+        if showing_time_str == 'Watch Now' or showing_screen.name == 'On Demand' or showing_screen.name == 'Virtual Cinema':
             # Do not include On-Demand showings (through the Filmhouse at Home streaming service)
             continue
         showing_datetime = datetime.datetime.strptime(f'{showing_date_str} {showing_time_str}', '%Y-%m-%d %H:%M')
-        showing_type_attributes = get_showing_type_attributes(name, showing_date_str, showing_time)
+        showing_attributes = get_showing_type_attributes(film_name, showing_date_str, showing_time)
+        showing_attributes['format'] = determine_showing_format(cinema['base_url'], showing_time['data-eventid'], film_attributes, showing_attributes)
+
         # Special case for 3D screenings, which should be treated as a format and not as a separate attribute
-        if 'three-d' in showing_type_attributes:
-            if 'format' not in attributes:
-                attributes['format'] = []
-            attributes['format'].append('3d')
-            del showing_type_attributes['three-d']
+        if 'three-d' in showing_attributes:
+            showing_attributes['format'].append('3d')
+            del showing_attributes['three-d']
+
         showing = Showing(
             film=film,
             time=showing_datetime,
             chain=CHAIN,
             cinema=cinema['cinema'],
             screen=showing_screen,
-            json_attributes={**attributes, **showing_type_attributes}
+            json_attributes={**film_attributes, **showing_attributes}
         )
         showing_list.append(showing)
     return showing_list
+
+
+def extract_attributes_from_name(film_name: str, film_attributes: dict[str, any]) -> str:
+    if film_name.lower().endswith(' (baby + carer)'):
+        film_name = film_name[:-len(' (baby + carer)')]
+        film_attributes['carers-and-babies'] = True
+    if film_name.lower().startswith('senior selections: '):
+        film_name = film_name[len('senior selections: '):]
+        film_attributes['seniors'] = True
+    if film_name.lower().endswith(' (35mm)'):
+        film_name = film_name[:-len(' (35mm)')]
+        film_attributes['format'].append('35mm')
+    if film_name.lower().endswith(' (70mm)'):
+        film_name = film_name[:-len(' (70mm)')]
+        film_attributes['format'].append('70mm')
+    if film_name.lower().endswith(' (35mm and 70mm)'):
+        film_name = film_name[:-len(' (35mm and 70mm)')]
+        film_attributes['format'] += ['35mm', '70mm']
+    if film_name.lower().endswith(' (70mm and 35mm)'):
+        film_name = film_name[:-len(' (70mm and 35mm)')]
+        film_attributes['format'] += ['35mm', '70mm']
+    if film_name.lower().endswith(' (35mm and digital)'):
+        film_name = film_name[:-len(' (35mm and digital)')]
+        film_attributes['format'] += ['35mm', 'digital']
+    if film_name.lower().endswith(' (digital and 35mm)'):
+        film_name = film_name[:-len(' (digital and 35mm)')]
+        film_attributes['format'] += ['35mm', 'digital']
+    if film_name.lower().endswith(' (70mm and digital)'):
+        film_name = film_name[:-len(' (70mm and digital)')]
+        film_attributes['format'] += ['70mm', 'digital']
+    if film_name.lower().endswith(' (digital and 70mm)'):
+        film_name = film_name[:-len(' (digital and 70mm)')]
+        film_attributes['format'] += ['35mm', 'digital']
+    return film_name
 
 
 def get_showing_type_attributes(film_name: str, showing_date_str: str, showing: BeautifulSoup) -> dict[str, any]:
@@ -128,9 +175,11 @@ def get_film_page_details(cinema: dict[str, any], film_url: str) -> (str, dict[s
         details_list = soup.find('div', class_='event-detail')
         release_year = get_specific_film_attribute(details_list, 'release_year')
         attributes['language'] = get_specific_film_attribute(details_list, 'languages')
-        filmFormat =  get_specific_film_attribute(details_list, 'format')
-        if filmFormat != '':
-            attributes['format'] = [filmFormat]
+        film_format = get_specific_film_attribute(details_list, 'format')
+        if film_format != '':
+            attributes['format'] = [film_format]
+        else:
+            attributes['format'] = [DEFAULT_SHOWING_FORMAT]
     film_page_details_cache[film_url] = (release_year, attributes)
     return release_year, attributes
 
@@ -143,12 +192,48 @@ def get_specific_film_attribute(details_list: BeautifulSoup, attribute_name: str
     return attribute_value
 
 
+def determine_showing_format(base_url: str, event_id: str, film_attributes: dict[str, any], showing_attributes: dict[str, any]) -> [str]:
+    # if the format is explicitly specified in the showing_attributes, use that
+    if 'format-35mm' in showing_attributes:
+        del showing_attributes['format-35mm']
+        return ['35mm']
+    elif 'format-70mm' in showing_attributes:
+        del showing_attributes['format-70mm']
+        return ['70mm']
+    elif 'format-digital' in showing_attributes:
+        del showing_attributes['format-digital']
+        return ['70mm']
+
+    # determine all the known formats for this film
+    film_formats = [format_type for format_type in KNOWN_SHOWING_FORMATS if 'format' in film_attributes and format_type in ' '.join(film_attributes['format'])]
+
+    # if only a single format is specified in the film_attributes, use that
+    if len(film_formats) == 1:
+        return film_formats
+
+    # if no format is specified in film_attributes, assume the default
+    elif len(film_formats) == 0:
+        return [DEFAULT_SHOWING_FORMAT]
+
+    # if multiple formats are specified in film_attributes, check the booking page
+    elif len(film_formats) > 1:
+        booking_url = f'{base_url}/boxoffice/?event={event_id}'
+        req = get_response(booking_url)
+        booking_soup = BeautifulSoup(req.text, features='html.parser')
+        page_title = booking_soup.find('title').text
+        showing_formats = [film_format for film_format in film_formats if film_format in page_title]
+        if len(showing_formats) == 0:
+            return [DEFAULT_SHOWING_FORMAT]
+        else:
+            return showing_formats
+
+
 class CentreForTheMovingImage(ChainArchiver):
     def get_showings(self) -> [Showing]:
         global film_page_details_cache
         film_page_details_cache = {}
         showings = []
         for cinema in CINEMAS_LIST:
-            for fetch_date in get_days_to_fetch():
+            for fetch_date in get_showing_dates():
                 showings += get_showings_for_date(cinema, fetch_date)
         return showings
