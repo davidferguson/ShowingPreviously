@@ -9,8 +9,8 @@ CHAIN = Chain(name='Glasgow Film Theatre')
 CINEMA = Cinema(name='Glasgow Film Theatre', timezone=UK_TIMEZONE)
 
 BASE_URL = 'https://glasgowfilm.org'
-
 WHATS_ON_URL = 'https://glasgowfilm.org/whats-on/all'
+FILM_TITLE_IGNORES = ['take 2:', 'introduction & q&a', 'preview:', 'panel discussion', 'discussion', 'recorded Q&A', 'Q&A', 'access film club:', 'visible cinema:', 'movie memories:', 'recorded introduction']
 
 
 films_cache = {}
@@ -61,39 +61,42 @@ def get_response(url: str) -> requests.Response:
         raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {url}')
     return r
 
-FILM_TITLE_IGNORES = ['take 2:', 'panel discussion', 'discussion', 'recorded Q&A', 'Q&A']
-
 
 def parse_film_title(film_title):
     # use lowercase
     film_title = film_title.lower()
+    film_attributes = {'format': []}
     # strip the rating from the film
     # note: the rating is always last
-    film_attributes = {'format': []}
-    try:
-        film_title = film_title[:film_title.find('(')].strip()
-    except:
-        film_title = film_title.strip()
+    if film_title.find('(') != -1:
+        film_title = film_title[:film_title.find('(')]
     # check for ignore keywords
     for keyword in FILM_TITLE_IGNORES:
         if keyword.lower() in film_title:
-            film_title = film_title.replace(keyword.lower(), '').strip()
+            film_title = film_title.replace(keyword.lower(), '')
     # check for 4K screenings
     if '4k' in film_title:
-        film_attributes['format'].append('4K')
+        film_attributes['format'] += ['digital', '4K']
         film_title = film_title.replace('4k', '').strip()
     # check for 35mm screenings
     if '35mm' in film_title:
         film_attributes['format'].append('35mm')
         film_title = film_title.replace('35mm', '').strip()
-    # remove any trailing '+' or '-'
-    if film_title.strip().endswith('-') or film_title.strip().endswith('+'):
-        film_title = film_title.strip()[:-1]
-    # remove any double-spaces from removing two items from the title
-    film_title = film_title.replace('  ', ' ').strip()
-    # remove the format attribute if it is empty
+    # if no format is given, assume digital
     if len(film_attributes['format']) == 0:
-        del film_attributes['format']
+        film_attributes['format'] = ['digital']
+    # clean up the title by removing trailing characters,
+    # blank spaces and double-spaces
+    while True:
+        # assume no changes
+        old_title = film_title
+        # remove any trailing '+' or '-'
+        if film_title.strip().endswith('-') or film_title.strip().endswith('+'):
+            film_title = film_title.strip()[:-1]
+        # remove any double-spaces from removing two items from the title
+        film_title = film_title.replace('  ', ' ').strip()
+        if old_title == film_title:
+            break
     return film_title, film_attributes
     
 
