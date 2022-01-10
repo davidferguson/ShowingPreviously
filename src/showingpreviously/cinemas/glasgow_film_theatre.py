@@ -2,8 +2,7 @@ from showingpreviously.model import Chain, Cinema, Screen, Film, Showing, ChainA
 from showingpreviously.consts import UNKNOWN_FILM_YEAR, STANDARD_DAYS_AHEAD, UK_TIMEZONE
 import showingpreviously.requests as requests
 
-import datetime, json, re, pytz
-from bs4 import BeautifulSoup
+import datetime, json, re, pytz, bs4
 
 CHAIN = Chain(name='Glasgow Film Theatre')
 CINEMA = Cinema(name='Glasgow Film Theatre', timezone=UK_TIMEZONE)
@@ -22,7 +21,7 @@ class GlasgowFilmTheatre(ChainArchiver):
         films_cache = {}
         showings = []
         req = get_response(WHATS_ON_URL)
-        soup = BeautifulSoup(req.text, 'html.parser')
+        soup = bs4.BeautifulSoup(req.text, 'html.parser')
         current_year = datetime.datetime.now().year
         for showings_on_date in soup.find_all('div', class_='show-strip-group'):
             #showing_date_str = showings_on_date.find('div, class_='show-strip-group-date').text.strip()
@@ -62,7 +61,7 @@ def get_response(url: str) -> requests.Response:
     return r
 
 
-def parse_film_title(film_title):
+def parse_film_title(film_title: str) -> (str, dict[str, any]):
     # use lowercase
     film_title = film_title.lower()
     film_attributes = {'format': []}
@@ -100,7 +99,7 @@ def parse_film_title(film_title):
     return film_title, film_attributes
     
 
-def film_from_heading(film_heading):
+def film_from_heading(film_heading: bs4.element.Tag) -> (Film, dict[str, any]):
     global films_cache
     film_title, film_attributes = parse_film_title(film_heading.find('h3').text)
     if film_title in films_cache:
@@ -108,7 +107,7 @@ def film_from_heading(film_heading):
     film = None
     film_details_page_url = f'{BASE_URL}{film_heading.find("h3").find("a")["href"]}'
     film_details_page = get_response(film_details_page_url).text
-    soup = BeautifulSoup(film_details_page, 'html.parser')
+    soup = bs4.BeautifulSoup(film_details_page, 'html.parser')
     try:
         metadata = soup.select('ul.inline-grid-row.meta')[0]
     except IndexError:
@@ -133,7 +132,7 @@ def film_from_heading(film_heading):
     return film, film_attributes
 
 
-def get_showing_attributes(showing_event):
+def get_showing_attributes(showing_event: bs4.element.Tag) -> dict[str, any]:
     showing_attributes = {}
     for attr in showing_event.find_all('span', class_='instance-type'):
         attr_name = attr.find('span', class_='accessible-hide').text.strip()
