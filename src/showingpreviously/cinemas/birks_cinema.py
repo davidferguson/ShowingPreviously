@@ -25,12 +25,13 @@ def get_response(url: str) -> requests.Response:
 
 
 def format_film_name(film_name: str) -> (str, dict[str, any]):
-    attributes = {}
+    attributes = {'format': []}
     # convert to lowercase for easier processing
     film_name = film_name.lower()
     # check to see if this is a live event
     if film_name.startswith('national theatre live: '):
-        attributes['live'] = True
+        attributes['format'].append('live')
+        attributes['event'] = True
         film_name = film_name.replace('national theatre live: ', '')
     # remove all the ignore items from the film name
     for ignore_item in FILM_NAME_IGNORES:
@@ -44,7 +45,10 @@ def format_film_name(film_name: str) -> (str, dict[str, any]):
         film_name = film_name.replace('  ', ' ').strip()
         if old_name == film_name:
             break
-    # return the formatted name
+    # remove an empty format attribute
+    if len(attributes['format']) == 0:
+        del attributes['format']
+    # return the formatted name and attributes
     return film_name, attributes
 
 
