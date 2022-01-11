@@ -20,10 +20,16 @@ def get_response(url: str) -> requests.Response:
     return r
 
 
-def parse_film_name(name: str):
-    for removal in ['U', '(PG)', '(12A)', '(12)', '(15)', '(18)', '2D']:
-        name = name.replace(removal, '').strip()
-    return name
+def parse_film_name(name: str) -> (str, [str]):
+    attributes = {'format': []}
+    for removal in [' U', '(PG)', '(12A)', '(12)', '(15)', '(18)', '2D', '3D']:
+        if name.endswith(removal):
+            name = name[:-1 * len(removal)].strip()
+            if removal in ['2D', '3D']:
+                attributes['format'].append(removal)
+    if len(attributes['format']) == 0:
+        del attributes['format']
+    return name, attributes
 
 
 def get_cinemas_as_dict() -> dict[str, Cinema]:
@@ -68,11 +74,11 @@ def get_showings_inline(cinema_url: str, cinema: Cinema, home_r: requests.Respon
         date_and_time = datetime.strptime(showing['date'], '%Y-%m-%d %H:%M:%S')
         if date_and_time > last_day:
             continue
-        film_name = parse_film_name(showing['title'])
+        film_name, attributes = parse_film_name(showing['title'])
         film = Film(film_name, UNKNOWN_FILM_YEAR)
         booking_url = home_r.url.replace('Home', showing['bookingurl'])
         screen = get_screen_inline(booking_url)
-        showings.append(Showing(film, date_and_time, CHAIN, cinema, screen, {}))
+        showings.append(Showing(film, date_and_time, CHAIN, cinema, screen, attributes))
 
     return showings
 
