@@ -22,11 +22,19 @@ def get_response(url: str) -> requests.Response:
 
 def parse_film_name(name: str) -> (str, [str]):
     attributes = {'format': []}
-    for removal in [' U', '(PG)', '(12A)', '(12)', '(15)', '(18)', '2D', '3D']:
-        if name.endswith(removal):
+    # ending
+    for removal in [' U', '(PG)', '(12A)', '(12)', '(15)', '(18)', '2D', '3D', '4K', '(WITH SANTA)']:
+        if name.lower().endswith(removal.lower()):
             name = name[:-1 * len(removal)].strip()
-            if removal in ['2D', '3D']:
+            if removal in ['2D', '3D', '4K']:
                 attributes['format'].append(removal)
+    # starting
+    for removal in ['NATIONAL THEATRE LIVE:']:
+        if name.lower().startswith(removal.lower()):
+            name = name[len(removal):].strip()
+            if removal == 'NATIONAL THEATRE LIVE:':
+                attributes['format'].append('live')
+                attributes['event'] = True
     if len(attributes['format']) == 0:
         del attributes['format']
     return name, attributes
@@ -43,8 +51,7 @@ def get_cinemas_as_dict() -> dict[str, Cinema]:
     return cinemas
 
 
-def get_attributes(showing: dict[str, any]) -> dict[str, any]:
-    attributes = {}
+def get_attributes(showing: dict[str, any], attributes) -> dict[str, any]:
     if showing['PB'] != 'N':
         attributes['carers-and-babies'] = True
     if showing['SS'] != 'N':
@@ -101,6 +108,7 @@ def get_showings_date(cinema_url: str, cinema: Cinema) -> [Showing]:
     showings = []
     for film_data in events_data['Events']:
         film_name = film_data['Title']
+        film_name, json_attributes = parse_film_name(film_name)
         film_year = film_data['Year'] if film_data['Year'] != '' else UNKNOWN_FILM_YEAR
         film = Film(film_name, film_year)
         for showing in film_data['Performances']:
@@ -108,7 +116,7 @@ def get_showings_date(cinema_url: str, cinema: Cinema) -> [Showing]:
             screen = Screen(showing['AuditoriumName'])
             time = showing['StartTime']
             date_and_time = datetime.strptime(f'{date} {time}', '%Y-%m-%d %H%M')
-            json_attributes = get_attributes(showing)
+            json_attributes = get_attributes(showing, json_attributes)
             showings.append(Showing(film, date_and_time, CHAIN, cinema, screen, json_attributes))
     return showings
 
