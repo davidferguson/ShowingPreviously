@@ -32,30 +32,6 @@ def get_cinemas_as_dict(origin: str) -> dict[str, Cinema]:
     return cinemas
 
 
-def get_attributes(showing: dict[str, any]) -> dict[str, any]:
-    attributes = {'format':[]}
-    for tag in showing['tags']:
-        if tag['is_imax']:
-            attributes['format'].append('IMAX')
-
-        if tag['name'] == 'AD':
-            attributes['audio-described'] = True
-        elif tag['name'] == 'ST':
-            attributes['subtitled'] = True
-        elif tag['name'] == 'Event':
-            attributes['event'] = True
-        elif tag['name'] in ['Live', '4K', '70mm', 'Atmos', 'HFR 30', 'IMAX', 'IMAX3D']:
-            attributes['format'].append(tag['name'])
-        elif tag['name'] == 'Seniors':
-            attributes['senior'] = True
-        elif tag['name'] == 'Baby':
-            attributes['carers-and-babies'] = True
-
-    if len(attributes['format']) == 0:
-        del attributes['format']
-    return attributes
-
-
 def get_showings(cinema_id: str, cinema: Cinema, origin: str, chain: Chain) -> [Showing]:
     url = SHOWINGS_API_URL.format(cinema_id=cinema_id)
     r = get_response(url, origin)
