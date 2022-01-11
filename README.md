@@ -15,6 +15,7 @@ Installing this module will install the `showingpreviously` command. This has tw
 - [Cineworld UK](https://www.cineworld.co.uk/) (added 2021-10-31) 
 - [Dundee Contemporary Arts Cinema](https://www.dca.org.uk/whats-on/films) (added 2021-10-29)
 - [Empire Cinemas](https://www.empirecinemas.co.uk/) (added 2021-11-07)
+- [Lonsdale City](https://lonsdalecitycinemas.co.uk/) (added 2022-01-11)
 - [Parkway Cinemas](https://parkwaycinemas.co.uk) (added 2021-11-14)
 - [Picturehouse](https://www.picturehouses.com/) (added 2021-11-06)
 - [The Light Cinemas](https://lightcinemas.co.uk/) (added 2021-10-07)
