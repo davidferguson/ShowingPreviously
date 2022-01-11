@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
-from showingpreviously.consts import UK_TIMEZONE
+from showingpreviously.consts import UK_TIMEZONE, UNKNOWN_FILM_YEAR
 
 
 CINEMAS_INDEX_URL = 'https://www.merlincinemas.co.uk/'
@@ -48,7 +48,7 @@ def get_films_info(film_ids: [str]) -> dict[str, Film]:
             released_date = released_tag.find('span').text
             released_year = released_date[-4:]
         except AttributeError:
-            released_year = '0'
+            released_year = UNKNOWN_FILM_YEAR
         films[film_id] = Film(film_title, released_year)
     return films
 
