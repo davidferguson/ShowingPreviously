@@ -7,7 +7,7 @@ from showingpreviously.consts import UK_TIMEZONE, UNKNOWN_FILM_YEAR
 
 
 FILM_SCHEDULE_URL = 'https://www.dominioncinema.co.uk/schedule/'
-FILM_NAME_IGNORES = ['(live)']
+FILM_NAME_IGNORES = []
 
 CHAIN = Chain('Dominion')
 CINEMA = Cinema('Dominion', UK_TIMEZONE)
@@ -20,9 +20,14 @@ def get_response(url: str) -> requests.Response:
     return r
 
 
-def format_film_name(film_name: str) -> str:
+def format_film_name(film_name: str) -> (str, dict[str, any]):
+    attributes = {}
     # convert to lowercase for easier processing
     film_name = film_name.lower()
+    # check for live showings
+    if '(live)' in film_name:
+        attributes['format'] = ['live']
+        film_name = film_name.replace('(live)', '')
     # remove all the ignore items from the film name
     for ignore_item in FILM_NAME_IGNORES:
         if ignore_item in film_name:
@@ -36,7 +41,7 @@ def format_film_name(film_name: str) -> str:
         if old_name == film_name:
             break
     # return the formatted name
-    return film_name
+    return film_name, attributes
 
 
 class Dominion(ChainArchiver):
@@ -51,7 +56,7 @@ class Dominion(ChainArchiver):
             # 'First Class' is an add-on package, not a separate screen
             if showing_screen.name == 'First Class and Gold One':
                 showing_screen.name = 'Gold One'
-            film_name = format_film_name(schedule_item.find_all('td')[2].text)
+            film_name, attributes = format_film_name(schedule_item.find_all('td')[2].text)
             film = Film(film_name, UNKNOWN_FILM_YEAR)
             showing_time_str = schedule_item.find_all('td')[3].find('div', class_='time').text
             showing_time = datetime.datetime.strptime(f'{showing_time_str} {showing_date_str}', '%H:%M %a %d %b, %Y')
@@ -61,7 +66,7 @@ class Dominion(ChainArchiver):
                 chain=CHAIN,
                 cinema=CINEMA,
                 screen=showing_screen,
-                json_attributes={}
+                json_attributes=attributes
             )
             showings.append(showing)
         return showings
