@@ -46,8 +46,14 @@ def get_attributes(experiences: [dict[str, any]]) -> dict[str, any]:
             attributes['event'] = True
         elif experience['ExternalId'] in ['Baby Pic', 'Baby Cin']:
             attributes['carers-and-babies'] = True
-        elif experience['ExternalId'] in ['XP', 'Real D 3D', 'IMAX', 'IMAX 2D', 'IMAX 3D', 'LVS', '3D+ HFR']:
+        elif experience['ExternalId'] in ['XP', 'IMAX', 'LVS', '3D+ HFR']:
             attributes['format'].append(experience['ExternalId'])
+        elif experience['ExternalId'] == 'IMAX 2D':
+            attributes['format'].append('IMAX')
+        elif experience['ExternalId'] == 'IMAX 3D':
+            attributes['format'] += ['IMAX', '3D']
+        elif experience['ExternalId'] == 'Real D 3D':
+            attributes['format'] += ['Real D 3D', '3D']
         elif experience['ExternalId'] == 'XPL':
             attributes['format'].append('XP')
             attributes['format'].append('Atmos')
