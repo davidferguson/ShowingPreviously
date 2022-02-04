@@ -21,7 +21,7 @@ LARAVEL_PATTERN = re.compile(r'laravel_session=(?P<laravel_session>.+?);')
 SHOWING_URL_ID_PATTERN = re.compile(r'/movie-details/\d+/(?P<film_id>.+?)/(?P<slug>.+)')
 SLUG_YEAR_PATTERN = re.compile(r'(?P<year>(?:18|19|20)\d{2})')
 JS_TO_URL_PATTERN = re.compile(r'"(?P<film_link>https?://.+?)"')
-DUBBED_LANGUAGE_PATTERN = re.compile(r'Please note, this screening features the (?P<dub_language>.+?) version of the film')
+DUBBED_LANGUAGE_PATTERN = re.compile(r'Please note, this screening features the Dubbed (?P<dub_language>.+?) version of the film')
 SUBBED_LANGUAGE_PATTERN = re.compile(r'have (?P<sub_language>.+?) subtitles')
 
 
