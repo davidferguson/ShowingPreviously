@@ -75,7 +75,7 @@ def get_film_year(film_link: str) -> str:
     soup = BeautifulSoup(r.text, features='html.parser')
     metadata = soup.find('div', {'class': 'directorDiv'})
     if not metadata:
-        return ''
+        return UNKNOWN_FILM_YEAR
     date = metadata.find('li', text='Release Date :').findNext('li').text
     year = date[-4:]
     return year
