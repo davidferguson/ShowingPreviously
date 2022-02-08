@@ -18,4 +18,4 @@ the string language (eg. `english`), and if not, this is simply `True`
 - `senior`: bool, specifies if this showing is for senior citizens only
 - `subtitled`: string or bool, specifies if the film is subtitled. If the language of the subtitling is known, this is
 the string language (eg. `english`), and if not, this is simply `True`
-
+- `kids`: this film is for kids, and adults must be accompanying a child

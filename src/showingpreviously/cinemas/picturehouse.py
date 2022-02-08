@@ -21,6 +21,8 @@ LARAVEL_PATTERN = re.compile(r'laravel_session=(?P<laravel_session>.+?);')
 SHOWING_URL_ID_PATTERN = re.compile(r'/movie-details/\d+/(?P<film_id>.+?)/(?P<slug>.+)')
 SLUG_YEAR_PATTERN = re.compile(r'(?P<year>(?:18|19|20)\d{2})')
 JS_TO_URL_PATTERN = re.compile(r'"(?P<film_link>https?://.+?)"')
+DUBBED_LANGUAGE_PATTERN = re.compile(r'Please note, this screening features the Dubbed (?P<dub_language>.+?) version of the film')
+SUBBED_LANGUAGE_PATTERN = re.compile(r'have (?P<sub_language>.+?) subtitles')
 
 
 def get_showing_dates() -> str:
@@ -72,6 +74,8 @@ def get_film_year(film_link: str) -> str:
 
     soup = BeautifulSoup(r.text, features='html.parser')
     metadata = soup.find('div', {'class': 'directorDiv'})
+    if not metadata:
+        return UNKNOWN_FILM_YEAR
     date = metadata.find('li', text='Release Date :').findNext('li').text
     year = date[-4:]
     return year
@@ -113,6 +117,13 @@ def get_attributes(attributes: [dict[str, any]]) -> dict[str, any]:
             json_attributes['ad-trailer-free'] = True
         elif attribute['attribute'] == 'Sub Cinema':
             json_attributes['subtitled'] = True
+            language = SUBBED_LANGUAGE_PATTERN.search(attribute['description'])
+            if language:
+                json_attributes['subtitled'] = language.group('sub_language')
+        elif attribute['attribute'] == 'Dub Cinema':
+            language = DUBBED_LANGUAGE_PATTERN.search(attribute['description'])
+            if language:
+                json_attributes['language'] = language.group('dub_language')
         elif attribute['attribute'] == 'LiveSat':
             json_attributes['format'].append('Live')
         elif attribute['attribute'] == 'Audio D':
@@ -125,6 +136,8 @@ def get_attributes(attributes: [dict[str, any]]) -> dict[str, any]:
             json_attributes['format'].append('4K')
         elif attribute['attribute'] == 'Toddler Ti':
             json_attributes['carers-and-babies'] = True
+        elif attribute['attribute'] == "Kids' Club":
+            json_attributes['kids'] = True
     if len(json_attributes['format']) == 0:
         del json_attributes['format']
     return json_attributes
