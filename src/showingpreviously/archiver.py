@@ -29,7 +29,7 @@ all_cinema_chains = [
 ]
 
 
-def process_showing(showing: Showing):
+def process_showing(showing: Showing, dummy_run: bool):
     film = showing.film
     time = showing.time
     chain = showing.chain
@@ -40,27 +40,28 @@ def process_showing(showing: Showing):
     timezone = pytz.timezone(cinema.timezone)
     utc_time = timezone.localize(time).astimezone(pytz.timezone('UTC'))
 
-    add_chain(chain.name)
-    add_cinema(chain.name, cinema.name, cinema.timezone)
-    add_screen(chain.name, cinema.name, screen.name)
-    add_film(film.name, film.year)
-    add_showing(film.name, film.year, chain.name, cinema.name, screen.name, utc_time, json_attributes)
+    if not dummy_run:
+        add_chain(chain.name)
+        add_cinema(chain.name, cinema.name, cinema.timezone)
+        add_screen(chain.name, cinema.name, screen.name)
+        add_film(film.name, film.year)
+        add_showing(film.name, film.year, chain.name, cinema.name, screen.name, utc_time, json_attributes)
 
 
-def run_chain(chain: ChainArchiver):
+def run_chain(chain: ChainArchiver, dummy_run: bool):
     showings = chain.get_showings()
     for showing in showings:
-        process_showing(showing)
+        process_showing(showing, dummy_run)
 
 
-def run_all() -> None:
+def run_all(dummy_run: bool) -> None:
     for cinema_chain in all_cinema_chains:
-        run_chain(cinema_chain)
+        run_chain(cinema_chain, dummy_run)
     close_selenium_webdriver()
 
 
-def run_single(name: str) -> None:
+def run_single(name: str, dummy_run: bool) -> None:
     for cinema_chain in all_cinema_chains:
         if type(cinema_chain).__name__ == name:
-            run_chain(cinema_chain)
+            run_chain(cinema_chain, dummy_run)
     close_selenium_webdriver()
