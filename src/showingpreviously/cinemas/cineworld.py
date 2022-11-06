@@ -11,9 +11,15 @@ SHOWINGS_API_URL = 'https://www.cineworld.co.uk/uk/data-api-service/v1/quickbook
 
 CHAIN = Chain('Cineworld UK')
 
+HEADERS = {
+    'User-Agent': 'showingpreviously',
+    'Host': 'www.cineworld.co.uk',
+    'Accept': 'application/json',
+}
+
 
 def get_response(url: str) -> requests.Response:
-    r = requests.get(url)
+    r = requests.get(url, headers=HEADERS)
     if r.status_code != 200:
         raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {url}')
     return r
