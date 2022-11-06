@@ -9,6 +9,7 @@ from showingpreviously.cinemas.centre_for_the_moving_image import CentreForTheMo
 from showingpreviously.cinemas.cineworld import Cineworld
 from showingpreviously.cinemas.dundee_contemporary_arts import DundeeContemporaryArts
 from showingpreviously.cinemas.empire import Empire
+from showingpreviously.cinemas.everyman import Everyman
 from showingpreviously.cinemas.vista_system import Odeon, Curzon
 from showingpreviously.cinemas.picturehouse import Picturehouse
 from showingpreviously.cinemas.lpvs import TheLight
@@ -21,6 +22,7 @@ all_cinema_chains = [
     Curzon(),
     DundeeContemporaryArts(),
     Empire(),
+    Everyman(),
     Odeon(),
     Parkway(),
     Picturehouse(),
