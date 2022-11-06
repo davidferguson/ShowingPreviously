@@ -1,6 +1,7 @@
 import json
 
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Tuple
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
 from showingpreviously.consts import UK_TIMEZONE
@@ -33,6 +34,28 @@ def get_cinemas_as_dict() -> dict[str, Cinema]:
     return cinemas
 
 
+def get_attributes_and_title(film_title:str) -> Tuple[str, dict[str, any]]:
+    lives = ['National Theatre Live:','ROH Live:', 'ROH Encore:', 'Met Opera Encore:', 'Met Opera Live:', ]
+    removals = ["Members' Preview:", '(Encore)', '+ Q&A', '+ Live Q&A', 'UK Jewish Film:']
+    attributes = {'format':[]}
+
+    if '(35mm)' in film_title:
+        film_title = film_title.replace('(35mm)', '')
+        attributes['format'].append('35mm')
+
+    for live in lives:
+        if live in film_title:
+            film_title = film_title.replace(live, '')
+            if 'live' not in attributes['format']:
+                attributes['format'].append('live')
+
+    for removal in removals:
+        if removal in film_title:
+            film_title = film_title.replace(removal, '')
+
+    return film_title, attributes
+
+
 def get_showings_date(cinema_id: str, cinema: Cinema) -> [Showing]:
     url = SHOWINGS_API_URL.format(cinema_id=cinema_id)
     r = get_response(url)
@@ -43,8 +66,9 @@ def get_showings_date(cinema_id: str, cinema: Cinema) -> [Showing]:
 
     showings = []
     for film_data in showings_data:
-        film_name = film_data['Title']
+        film_title = film_data['Title']
         film_year = film_data['ReleaseDate'][:4]
+        film_name, film_attributes = get_attributes_and_title(film_title)
         film = Film(film_name, film_year)
         for session in film_data['Sessions']:
             date = session['NewDate']
@@ -52,8 +76,7 @@ def get_showings_date(cinema_id: str, cinema: Cinema) -> [Showing]:
                 screen = Screen(showing['Screen'])
                 time = showing['StartTime']
                 date_and_time = datetime.strptime(f'{date} {time}', '%Y-%m-%d %I:%M %p')
-                json_attributes = {}  # Everyman doesn't expose any attributes in the API
-                showings.append(Showing(film, date_and_time, CHAIN, cinema, screen, json_attributes))
+                showings.append(Showing(film, date_and_time, CHAIN, cinema, screen, film_attributes))
     return showings
 
 
