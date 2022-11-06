@@ -2,11 +2,11 @@ import re
 import time
 from bs4 import BeautifulSoup
 from datetime import datetime
-
+from typing import Tuple
 
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Film, Showing, Screen
-from showingpreviously.consts import UK_TIMEZONE
+from showingpreviously.consts import UK_TIMEZONE, UNKNOWN_FILM_YEAR
 
 
 CINEMAS_INDEX_URL = 'http://arccinema.ie/'
@@ -56,12 +56,18 @@ def get_date_and_screen(booking_url: str, delay_time: int) -> (datetime, Screen)
     return date, Screen(screen_name)
 
 
-def get_film(film_url: str, title: str) -> Film:
-    r = get_response(film_url)
-    soup = BeautifulSoup(r.text, features='html.parser')
-    release_date = soup.find('b', text='Release Date:').next_sibling.text.strip()
-    release_year = release_date[-4:]
-    return Film(title, release_year)
+def get_film_attributes(film_title: str) -> Tuple[str, dict[str, any]]:
+    attributes = {}
+    if '(Subtitled)' in film_title:
+        film_title = film_title.replace('(Subtitled)', '')
+        attributes['subtitled'] = True
+    if '- Subtitled' in film_title:
+        film_title = film_title.replace('- Subtitled', '')
+        attributes['subtitled'] = True
+    if '- Dubbed' in film_title:
+        film_title = film_title.replace('- Dubbed', '')
+        attributes['language'] = 'English'
+    return film_title, attributes
 
 
 def get_showings_date(cinema_url: str, cinema: Cinema) -> [Showing]:
@@ -73,16 +79,16 @@ def get_showings_date(cinema_url: str, cinema: Cinema) -> [Showing]:
         full_list = soup.find('div', {'class': '_spaceOverride'})
         for film_card in full_list.find_all('div', {'class': 'a1-split100'}):
             film_info = film_card.find('div', {'class': 'movieItemDetails'})
-            film_link = film_info.find('a', {'href': True})['href']
             film_title = film_info.find('h3', {'class': 'movieItemTitle'}).text
-            film = get_film(film_link, film_title)
+            film_title, attributes = get_film_attributes(film_title)
+            film = Film(film_title, UNKNOWN_FILM_YEAR)
             for booking_link in film_card.find_all('a', href=lambda href: href and 'admit-one.eu/?p=tickets' in href):
                 link = booking_link['href']
                 date, screen = get_date_and_screen(link, 0)
                 if date is None or screen is None:
                     # the screening has expired, we can't do anything with it
                     continue
-                showings.append(Showing(film, date, CHAIN, cinema, screen, {}))
+                showings.append(Showing(film, date, CHAIN, cinema, screen, attributes))
     return showings
 
 
