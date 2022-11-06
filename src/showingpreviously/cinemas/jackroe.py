@@ -35,6 +35,23 @@ def get_response(url: str) -> requests.Response:
     return r
 
 
+def get_film_attributes(film_title: str) -> dict[str, any]:
+    attributes = {}
+    if 'SUBTITLED SCREENING' in film_title:
+        attributes['subtitled'] = True
+        film_title = film_title.replace('SUBTITLED SCREENING', '')
+    if '(DUBBED)' in film_title:
+        attributes['language'] = 'English'
+        film_title = film_title.replace('(DUBBED)', '')
+    if film_title.endswith('2D'):
+        attributes['format'] = [' 2D']
+        film_title = film_title[:-3]
+    if film_title.endswith('3D'):
+        attributes['format'] = [' 3D']
+        film_title = film_title[:-3]
+    return film_title, attributes
+
+
 def get_attributes(html: str) -> dict[str, any]:
     attributes = {}
     if 'Audio Description' in html:
@@ -51,6 +68,9 @@ def get_showings_date(cinema_id: str, cinema: Cinema, chain: Chain, showing_date
     showings = []
     for movie_row in soup.find_all('div', {'class': 'start-performance-box'}):
         film_title = movie_row.find('h3').text.strip()
+        film_title = film_title.replace('\n', ' ').replace('\t', ' ')
+        film_title = re.sub(' +', ' ', film_title)
+        film_title, film_attributes = get_film_attributes(film_title)
         film = Film(film_title, UNKNOWN_FILM_YEAR)
         for day_row in movie_row.find_all('div', {'class': 'col-md-4'}):
             day = day_row.text.strip()
@@ -71,8 +91,8 @@ def get_showings_date(cinema_id: str, cinema: Cinema, chain: Chain, showing_date
                 date = showing_info.group('date').strip()
                 time = showing_info.group('time').strip()
                 date_and_time = datetime.strptime(f'{date} {time}', '%A %d %B %Y %H:%M')
-                json_attributes = get_attributes(r.text)
-                showings.append(Showing(film, date_and_time, chain, cinema, screen, json_attributes))
+                screening_attributes = get_attributes(r.text)
+                showings.append(Showing(film, date_and_time, chain, cinema, screen, {**film_attributes, **screening_attributes}))
     return showings
 
 
