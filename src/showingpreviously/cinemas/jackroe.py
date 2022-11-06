@@ -14,11 +14,6 @@ SHOWING_CODE_PATTERN = re.compile(r'book\?perfcode=(?P<showing_code>\d+)$')
 SHOWING_INFO_PATTERN = re.compile(r'at(?P<time>\s+\d+:\d+)\s+on\s+(?P<date>.+?)\s+showing in\s+(?P<screen_name>.+?)\s*<')
 FINISHED_TEXT = 'We are afraid that sales for the following performance have now finished'
 
-MOVIEHOUSE_BASE_URL = 'https://www.moviehouse.co.uk'
-MOVIEHOUSE_CINEMAS_URL = f'{MOVIEHOUSE_BASE_URL}/Home/AllCinemas'
-MOVIEHOUSE_CHAIN = Chain('Movie House Cinemas')
-MOVIEHOUSE_LOCATION_CODE_PATTERN = re.compile(r'var\s+location\s*=\s*"(?P<location_code>.+?)";')
-
 SCOTTCINEMAS_BASE_URL = 'https://www.scottcinemas.co.uk'
 SCOTTCINEMAS_CHAIN = Chain('Scott Cinemas')
 SCOTTCINEMAS_LOCATION_CODE_PATTERN = re.compile(r'/websales/sales/(?P<location_code>.+?)/actual_book')
@@ -120,24 +115,6 @@ class JackRoe(ChainArchiver):
         for cinema_id, cinema in cinemas.items():
             showings += get_showings_date(cinema_id, cinema, self.chain, showing_dates)
         return showings
-
-
-class MovieHouse(JackRoe):
-    def __init__(self):
-        super().__init__(MOVIEHOUSE_CHAIN)
-
-    def get_cinemas(self) -> dict[str, Cinema]:
-        r = get_response(MOVIEHOUSE_CINEMAS_URL)
-        soup = BeautifulSoup(r.text, features='html.parser')
-        container = soup.find('div', {'class': 'col-sm-push-1'})
-        cinemas = {}
-        for cinema_link in container.find_all('a', {'href': True}):
-            cinema_name = cinema_link.text.replace('MOVIE HOUSE', '').strip()
-            cinema_link = MOVIEHOUSE_BASE_URL + cinema_link['href']
-            r = get_response(cinema_link)
-            cinema_id = MOVIEHOUSE_LOCATION_CODE_PATTERN.search(r.text).group('location_code')
-            cinemas[cinema_id] = Cinema(cinema_name, UK_TIMEZONE)
-        return cinemas
 
 
 class ScottCinemas(JackRoe):
