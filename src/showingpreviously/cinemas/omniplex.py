@@ -4,7 +4,7 @@ import re
 
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
-from showingpreviously.consts import STANDARD_DAYS_AHEAD, UK_TIMEZONE, UNKNOWN_FILM_YEAR
+from showingpreviously.consts import STANDARD_DAYS_AHEAD, UK_TIMEZONE, UNKNOWN_FILM_YEAR, UNKNOWN_SCREEN
 
 
 CINEMAS_URL = 'https://www.omniplex.ie/'
@@ -47,6 +47,8 @@ def get_attributes(at: str) -> dict[str, any]:
 
 def get_showing_screen(booking_link: str) -> Screen:
     r = get_response(booking_link)
+    if 'Booking Error' in r.text:
+        return UNKNOWN_SCREEN
     screen_name = SCREEN_NAME_PATTERN.search(r.text).group('screen_name')
     screen = Screen(screen_name)
     return screen
