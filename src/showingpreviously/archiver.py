@@ -10,6 +10,7 @@ from showingpreviously.cinemas.cineworld import Cineworld
 from showingpreviously.cinemas.dundee_contemporary_arts import DundeeContemporaryArts
 from showingpreviously.cinemas.empire import Empire
 from showingpreviously.cinemas.vista_system import Odeon, Curzon
+from showingpreviously.cinemas.omniplex import Omniplex
 from showingpreviously.cinemas.picturehouse import Picturehouse
 from showingpreviously.cinemas.lpvs import TheLight
 from showingpreviously.cinemas.parkway import Parkway
@@ -22,6 +23,7 @@ all_cinema_chains = [
     DundeeContemporaryArts(),
     Empire(),
     Odeon(),
+    Omniplex(),
     Parkway(),
     Picturehouse(),
     TheLight(),
