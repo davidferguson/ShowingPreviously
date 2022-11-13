@@ -92,6 +92,6 @@ def get_row_details(row_datas: [str], showing_number: int) -> Tuple[datetime.dat
         showing_time = row_datas[5]
     else:
         raise CinemaArchiverException(f'Invalid showing number: {showing_number}')
-    if film_name.strip() == '' and showing_time.strip() == '':
+    if film_name.strip() == '' or showing_time.strip() == '':
         raise InvalidRowException()
     return row_date, film_name, showing_time
