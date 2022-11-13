@@ -3,7 +3,7 @@ import lxml
 import datetime
 
 from bs4 import BeautifulSoup
-from typing import Tuple
+from typing import Tuple, Optional
 
 import showingpreviously.requests as requests
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
@@ -67,7 +67,7 @@ def parse_table_row(table_row: BeautifulSoup) -> [Showing]:
     return showings
 
 
-def extract_showing(row_datas: [str], showing_number: int) -> Showing:
+def extract_showing(row_datas: [str], showing_number: int) -> Optional[Showing]:
     try:
         (row_date, film_name, showing_time) = get_row_details(row_datas, showing_number)
     except InvalidRowException:
