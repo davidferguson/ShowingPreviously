@@ -33,17 +33,20 @@ class IsleOfButeDiscoveryCentreCinema(ChainArchiver):
         showings = []
         feed_contents = get_response(FEED_URL).text
         feed_soup = BeautifulSoup(feed_contents, features='xml')
-        html_contents = feed_soup.find('entry').find('content', type='html').contents
-        html_soup = BeautifulSoup(html_contents[0], features='html.parser')
-        listings_table = html_soup.find('table')
-        for i, row in enumerate(listings_table.find_all('tr')):
-            if i == 0:
-                continue  # skip the 'Film listings for <Month> row'
-            elif i == 1:
-                check_table_schema(row)
-                continue
-            else:
-                showings += parse_table_row(row)
+        for monthly_entry in feed_soup.find_all('entry'):
+            if not monthly_entry.find('title', {'type': 'text'}).text.endswith(' Films'):
+                continue  # Needed to skip 'info'-style entries like COVID re-opening information
+            html_contents = monthly_entry.find('content', type='html').contents
+            html_soup = BeautifulSoup(html_contents[0], features='html.parser')
+            listings_table = html_soup.find('table')
+            for i, row in enumerate(listings_table.find_all('tr')):
+                if i == 0:
+                    continue  # skip the 'Film listings for <Month> row'
+                elif i == 1:
+                    check_table_schema(row)
+                    continue
+                else:
+                    showings += parse_table_row(row)
         return showings
 
 
@@ -75,6 +78,8 @@ def extract_showing(row_datas: [str], showing_number: int) -> Optional[Showing]:
     showing_film = FILM_TITLE_REGEX.search(film_name).group('title')
     showing_time = datetime.datetime.strptime(showing_time, '%I.%M%p')
     showing_timestamp = row_date + datetime.timedelta(hours=showing_time.hour, minutes=showing_time.minute)
+    if datetime.datetime.now() > showing_timestamp:
+        return None
     film = Film(name=showing_film, year='')
     showing = Showing(film, showing_timestamp, CHAIN, CINEMA, SCREEN, {})
     return showing
