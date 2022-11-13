@@ -29,7 +29,7 @@ all_cinema_chains = [
 ]
 
 
-def process_showing(showing: Showing, dry_run: bool):
+def process_showing(showing: Showing, dry_run: bool = False):
     film = showing.film
     time = showing.time
     chain = showing.chain
@@ -48,19 +48,19 @@ def process_showing(showing: Showing, dry_run: bool):
         add_showing(film.name, film.year, chain.name, cinema.name, screen.name, utc_time, json_attributes)
 
 
-def run_chain(chain: ChainArchiver, dry_run: bool):
+def run_chain(chain: ChainArchiver, dry_run: bool = False):
     showings = chain.get_showings()
     for showing in showings:
         process_showing(showing, dry_run)
 
 
-def run_all(dry_run: bool) -> None:
+def run_all(dry_run: bool = False) -> None:
     for cinema_chain in all_cinema_chains:
         run_chain(cinema_chain, dry_run)
     close_selenium_webdriver()
 
 
-def run_single(name: str, dry_run: bool) -> None:
+def run_single(name: str, dry_run: bool = False) -> None:
     for cinema_chain in all_cinema_chains:
         if type(cinema_chain).__name__ == name:
             run_chain(cinema_chain, dry_run)

@@ -28,7 +28,7 @@ def info_cmd(list_chains: bool) -> None:
 @cli.command('run')
 @click.option('--chain', default=None, show_default=True, type=click.STRING, help='The archiver class name to run')
 @click.option('--dry-run', 'dry_run', is_flag=True, default=False, show_default=False, type=click.BOOL, help='Run, but don\'t make any changes to the DB')
-def run_cmd(chain: Optional[str], dry_run: bool) -> None:
+def run_cmd(chain: Optional[str], dry_run: bool = False) -> None:
     """Runs the archiver on all cinema chains"""
     if dry_run:
         print('Dry run, no changes to DB')
