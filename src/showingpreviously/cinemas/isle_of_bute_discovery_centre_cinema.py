@@ -1,4 +1,6 @@
-import re, lxml, datetime
+import re
+import lxml
+import datetime
 
 from bs4 import BeautifulSoup
 from typing import Tuple
@@ -12,7 +14,7 @@ CINEMA = Cinema('Isle of Bute Discovery Centre Cinema', UK_TIMEZONE)
 SCREEN = Screen('Screen 1')
 
 FEED_URL = 'http://discoverycentrecinema.blogspot.com/feeds/posts/default'
-FILM_TITLE_REGEX = re.compile('(?P<title>.*) (?P<rating>\(..*\))')
+FILM_TITLE_REGEX = re.compile(r'(?P<title>.*) (?P<rating>\(..*\))')
 
 
 class InvalidRowException(Exception):
@@ -36,7 +38,7 @@ class IsleOfButeDiscoveryCentreCinema(ChainArchiver):
         listings_table = html_soup.find('table')
         for i, row in enumerate(listings_table.find_all('tr')):
             if i == 0:
-                continue # skip the 'Film listings for <Month> row'
+                continue  # skip the 'Film listings for <Month> row'
             elif i == 1:
                 check_table_schema(row)
                 continue
@@ -60,8 +62,8 @@ def check_table_schema(table_schema_row: BeautifulSoup):
 
 def parse_table_row(table_row: BeautifulSoup) -> [Showing]:
     row_datas = [td.text for td in table_row.find_all('td')]
-    showings = [ extract_showing(row_datas, 0), extract_showing(row_datas, 1)]
-    showings = [showing for showing in showings if showing != None]
+    showings = [extract_showing(row_datas, 0), extract_showing(row_datas, 1)]
+    showings = [showing for showing in showings if showing is not None]
     return showings
 
 
@@ -92,4 +94,4 @@ def get_row_details(row_datas: [str], showing_number: int) -> Tuple[datetime.dat
         raise CinemaArchiverException(f'Invalid showing number: {showing_number}')
     if film_name.strip() == '' and showing_time.strip() == '':
         raise InvalidRowException()
-    return (row_date, film_name, showing_time)
+    return row_date, film_name, showing_time
