@@ -5,7 +5,6 @@ from showingpreviously.model import Showing, ChainArchiver
 from showingpreviously.selenium import close_selenium_webdriver
 
 # import cinemas here, and add them to the all_cinema_chains list
-from showingpreviously.cinemas.centre_for_the_moving_image import CentreForTheMovingImage
 from showingpreviously.cinemas.cineworld import Cineworld
 from showingpreviously.cinemas.dundee_contemporary_arts import DundeeContemporaryArts
 from showingpreviously.cinemas.empire import Empire
@@ -17,7 +16,6 @@ from showingpreviously.cinemas.parkway import Parkway
 from showingpreviously.cinemas.vue import Vue
 
 all_cinema_chains = [
-    CentreForTheMovingImage(),
     Cineworld(),
     Curzon(),
     DundeeContemporaryArts(),
