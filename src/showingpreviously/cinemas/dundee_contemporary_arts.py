@@ -41,9 +41,13 @@ def get_film_links_from_index(index_url: str) -> Iterator[str]:
     main_content = soup.find('div', {'id': 'content-main'})
     if not main_content:
         raise CinemaArchiverException(f'Could not get main content of URL {index_url}')
-    for film_title in main_content.find_all('h2'):
-        link = film_title.find('a', href=True)
-        yield link['href']
+    for film_item in main_content.find_all('div', {'class': 'article event'}):
+        film_title = film_item.find('h2')
+        link_location = film_title.find('a', href=True)['href']
+        location = film_item.find('p', {'class': 'location'}).text
+        if location.strip().lower() != 'cinema':
+            continue
+        yield link_location
 
 
 def get_film_info_from_url(film_url: str) -> (str, str, str, dict[str, any]):
