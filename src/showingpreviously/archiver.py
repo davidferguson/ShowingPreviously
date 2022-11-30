@@ -12,6 +12,7 @@ from showingpreviously.cinemas.isle_of_bute_discovery_centre_cinema import IsleO
 from showingpreviously.cinemas.vista_system import Odeon, Curzon
 from showingpreviously.cinemas.omniplex import Omniplex
 from showingpreviously.cinemas.picturehouse import Picturehouse
+from showingpreviously.cinemas.scotsman_picturehouse import ScotsmanPicturehouse
 from showingpreviously.cinemas.lpvs import TheLight
 from showingpreviously.cinemas.parkway import Parkway
 from showingpreviously.cinemas.vue import Vue
@@ -26,6 +27,7 @@ all_cinema_chains = [
     Omniplex(),
     Parkway(),
     Picturehouse(),
+    ScotsmanPicturehouse(),
     TheLight(),
     Vue(),
 ]
