@@ -19,3 +19,6 @@ UNKNOWN_FILM_YEAR = ''
 # archiver consts
 STANDARD_DAYS_AHEAD = 2
 UK_TIMEZONE = 'Europe/London'
+
+# webdriver consts
+WEBDRIVER_ORDER = ['Firefox', 'Chrome']
