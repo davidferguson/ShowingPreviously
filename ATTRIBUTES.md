@@ -9,10 +9,12 @@ The following attributes are used:
 - `audio-described`: string or bool, specifies if the film can be viewed with an audio description (usually through an
 additional device provided by the cinema). If the language of the audio description is known, this is the string 
 language (eg. `english`), and if not, this is simply `True`
+- `autism-friendly`: bool, specifies if this showing has been designed to be welcoming for autistic people
 - `carers-and-babies`: bool, specifies if this showing is for babies and their carers only
 - `captioned`: string or bool, specifies if the film is captioned. If the language of the captioning is known, this is
 the string language (eg. `english`), and if not, this is simply `True`
 - `format`: list of str, specifies the format(s) the film was projected in
+- `dementia-friendly`: bool, specifies if this showing has been designed to be welcoming for people affected by dementia
 - `dog-friendly`: bool, specifies if this showing is dog friendly
 - `language`: string, specifies the language(s) of the showing
 - `senior`: bool, specifies if this showing is for senior citizens only
