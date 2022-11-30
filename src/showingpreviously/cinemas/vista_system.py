@@ -8,9 +8,9 @@ from showingpreviously.selenium import get_selenium_webdriver
 from showingpreviously.model import ChainArchiver, CinemaArchiverException, Chain, Cinema, Screen, Film, Showing
 from showingpreviously.consts import STANDARD_DAYS_AHEAD
 
-CINEMAS_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/browsing/master-data/sites'
-FILMS_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/browsing/master-data/films'
-SHOWINGS_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/browsing/master-data/showtimes/business-date/{date}'
+SITES_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/sites'
+SHOWINGS_URL = 'https://{api_url}/WSVistaWebClient/ocapi/v1/showtimes/by-business-date/{date}?{site_query}'
+SHOWINGS_SITE_QUERY = 'siteIds={site_id}&'
 
 
 def get_request_headers(token: str) -> dict[str, str]:
@@ -105,12 +105,29 @@ def get_showings_date(showings_data: any, chain_name: str) -> [Showing]:
     return showings
 
 
+def get_site_query(api_url: str, token: str) -> str:
+    request_headers = get_request_headers(token)
+    url = SITES_URL.format(api_url=api_url)
+    r = requests.get(url, headers=request_headers)
+    if r.status_code != 200:
+        raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {url}')
+    try:
+        sites_data = r.json()
+    except json.JSONDecodeError:
+        raise CinemaArchiverException(f'Error decoding JSON data from URL {url}')
+    site_query = ''
+    for site in sites_data['sites']:
+        site_query += SHOWINGS_SITE_QUERY.format(site_id=site['id'])
+    return site_query[:-1]
+
+
 def get_api_data(api_url: str, token: str) -> Iterator[dict[str, any]]:
     request_headers = get_request_headers(token)
+    site_query = get_site_query(api_url, token)
     current_date = datetime.now()
     end_date = current_date + timedelta(days=STANDARD_DAYS_AHEAD)
     while current_date < end_date:
-        url = SHOWINGS_URL.format(api_url=api_url, date=current_date.strftime('%Y-%m-%d'))
+        url = SHOWINGS_URL.format(api_url=api_url, date=current_date.strftime('%Y-%m-%d'), site_query=site_query)
         r = requests.get(url, headers=request_headers)
         if r.status_code != 200:
             raise CinemaArchiverException(f'Got status code {r.status_code} when fetching URL {url}')
