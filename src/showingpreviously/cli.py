@@ -27,15 +27,18 @@ def info_cmd(list_chains: bool) -> None:
 
 @cli.command('run')
 @click.option('--chain', default=None, show_default=True, type=click.STRING, help='The archiver class name to run')
-def run_cmd(chain: Optional[str]) -> None:
+@click.option('--dry-run', 'dry_run', is_flag=True, default=False, show_default=False, type=click.BOOL, help='Run, but don\'t make any changes to the DB')
+def run_cmd(chain: Optional[str], dry_run: bool = False) -> None:
     """Runs the archiver on all cinema chains"""
+    if dry_run:
+        print('Dry run, no changes to DB')
     if chain is None:
-        run_all()
+        run_all(dry_run)
     else:
         installed_chains = [type(cinema_chain).__name__ for cinema_chain in all_cinema_chains]
         if chain not in installed_chains:
             raise click.BadOptionUsage('--chain', f'No such installed chain "{chain}"')
-        run_single(chain)
+        run_single(chain, dry_run)
 
 
 if __name__ == '__main__':
