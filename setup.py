@@ -23,5 +23,6 @@ setup(
         'requests',
         'beautifulsoup4',
         'selenium',
+        'lxml',
     ],
 )
